@@ -53,7 +53,7 @@ def get_unique_user_fake_id():
 	ids = list(filter(lambda id: id not in reserved_ids, range(10, int(len(users) * 1.2) + 30)))
 	if len(ids) == 0:
 		return 10
-	return ids[randint(0, len(ids) + 1)]
+	return ids[randint(0, len(ids))]
 
 
 def time_to_str(time: int):
