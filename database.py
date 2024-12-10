@@ -66,6 +66,16 @@ class Role(Enum):
 	MODERATOR = 3
 
 
+	def __str__(self):
+		values = {
+			Role.USER: 'Пользователь',
+			Role.ADMIN: 'Админ',
+			Role.OWNER: 'Создатель',
+			Role.MODERATOR: 'Модератор'
+		}
+		return values[self]
+
+
 class User(Base):
 	__tablename__ = 'users'
 
