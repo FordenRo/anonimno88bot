@@ -4,7 +4,7 @@ from aiogram import Dispatcher
 from sqlalchemy import select
 
 from handlers import start, rules, help, markup, message, simple_commands, panel
-from database import Base, User, DelayedMessage, Role
+from database import Base, User, DelayedMessage
 from globals import bot, engine, session
 from utils import update_user_commands
 

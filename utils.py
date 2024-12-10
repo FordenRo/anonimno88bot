@@ -1,6 +1,5 @@
 from random import randint
 
-import yaml
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, BotCommand, BotCommandScopeChat
 from sqlalchemy import select
 

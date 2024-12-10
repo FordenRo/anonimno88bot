@@ -1,7 +1,6 @@
 import time
 
 from aiogram import Router, F
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile, CallbackQuery
 from sqlalchemy import select
 from sqlalchemy.sql.functions import count
