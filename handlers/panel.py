@@ -1,4 +1,6 @@
 import time
+from asyncio import create_task, gather
+from itertools import batched
 
 from aiogram import Router, F
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile, CallbackQuery
@@ -37,7 +39,32 @@ async def callback(callback: CallbackQuery, user: User):
 	await callback.answer()
 
 
-@router.callback_query(F.data == 'panel;user_list', UserFilter())
-async def user_list(callback: CallbackQuery, user: User, state: FSMContext):
-	index = int(callback.data.split(';')[2:] or -1)
+@router.callback_query(F.data.startswith('panel;user_list'), UserFilter())
+async def user_list(callback: CallbackQuery, user: User):
+	index = callback.data.split(';')[2:]
+	edit = index
+	index = int(index[0]) if index else 0
+	pages = list(batched(session.scalars(select(User)).all(), 15))
+
+	async def get_user_info(user: User):
+		chat = await bot.get_chat(user.id)
+		return f'{str(user.role)} №{user.fake_id} {chat.full_name} ({chat.username or f'id_{user.id}'})'
+
+	tasks = [create_task(get_user_info(user)) for user in pages[index]]
+	infos = await gather(*tasks)
+
+	btns = []
+	if index > 0:
+		btns += [InlineKeyboardButton(text='Назад', callback_data=f'panel;user_list;{index - 1}')]
+	if index + 1 != len(pages):
+		btns += [InlineKeyboardButton(text='Вперед', callback_data=f'panel;user_list;{index + 1}')]
+
+	kb = InlineKeyboardMarkup(inline_keyboard=[btns] + [[InlineKeyboardButton(text='Закрыть', callback_data='hide')]])
+	page_string = f'Список пользователей ({index + 1}/{len(pages)})\n'
+	text = '\n'.join([page_string] + infos)
+	if edit:
+		await callback.message.edit_text(text, reply_markup=kb)
+	else:
+		await bot.send_message(user.id, text, reply_markup=kb)
+
 	await callback.answer()
