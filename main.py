@@ -1,31 +1,14 @@
 import logging
-from asyncio import run as run_async, sleep as sleep_async, create_task, gather
+from asyncio import run as run_async
 
 from aiogram import Dispatcher
 from sqlalchemy import select
 
-from database import Base, User, DelayedMessage
-from handlers.log import LogHandler
+from database import Base, User
 from globals import bot, engine, session, logger, IS_RELEASE
 from handlers import start, rules, help, markup, message, simple_commands, panel, delete
+from handlers.log import LogHandler
 from utils import update_user_commands, save_log
-
-
-async def delayed_messages_task():
-	while True:
-		await sleep_async(1)
-
-		async def task(message: DelayedMessage):
-			await sleep_async(message.delay)
-
-			try:
-				await bot.delete_message(message.chat_id, message.message_id)
-			except:
-				pass
-
-		for message in session.scalars(select(DelayedMessage)).all():
-			create_task(task(message))
-			session.delete(message)
 
 
 async def main():
@@ -46,12 +29,9 @@ async def main():
 	for user in session.scalars(select(User)).all():
 		await update_user_commands(user)
 
-	tasks = gather(delayed_messages_task())
-
 	logger.info('Bot has started')
 	await dispatcher.start_polling(bot)
 
-	tasks.cancel()
 	session.commit()
 	engine.dispose()
 	logger.info('Bot has stopped')

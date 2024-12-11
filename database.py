@@ -169,11 +169,3 @@ class Mute(Base):
 
 	sender_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 	sender: Mapped['User'] = relationship(foreign_keys=[sender_id])
-
-
-class DelayedMessage(Base):
-	__tablename__ = 'delayed_messages'
-
-	message_id: Mapped[int] = mapped_column(primary_key=True)
-	chat_id: Mapped[int] = mapped_column()
-	delay: Mapped[int] = mapped_column()

@@ -4,9 +4,10 @@ from aiogram import Router
 from aiogram.types import Message, ReplyParameters
 from sqlalchemy import select
 
-from database import User, RealMessage, FakeMessage, Opportunity, DelayedMessage
+from database import User, RealMessage, FakeMessage, Opportunity
 from filters.user import UserFilter
 from globals import session, bot, START_TIME
+from handlers.delayed import DelayedMessage
 from utils import get_string, time_to_str
 
 router = Router()
@@ -27,10 +28,9 @@ async def message(message: Message, user: User):
 			and remaining_time > 0
 			and not sender.has_opportunity(Opportunity.NO_MESSAGE_DELAY)):
 		await message.delete()
-		message = await bot.send_message(sender.id, get_string(f'debounce/{content_type}/message')
-										 .format(time_to_str(remaining_time)))
-		session.add(DelayedMessage(message_id=message.message_id, chat_id=sender.id, delay=2))
-		session.commit()
+
+		DelayedMessage(await bot.send_message(sender.id, get_string(f'debounce/{content_type}/message')
+											  .format(time_to_str(remaining_time))), 2).start()
 		return
 
 	if message.reply_to_message:

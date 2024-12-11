@@ -4,9 +4,10 @@ from aiogram import Router
 from aiogram.types import Message
 from sqlalchemy import select
 
-from database import User, Opportunity, DelayedMessage, RealMessage
+from database import User, Opportunity, RealMessage
 from filters.command import UserCommand
 from globals import bot, session
+from handlers.delayed import DelayedMessage
 from utils import get_string, hide_markup, time_to_str
 
 router = Router()
@@ -21,22 +22,20 @@ async def command(message: Message, user: User):
 	remaining_time = user.last_delete_time + debounce - current_time
 
 	if remaining_time > 0 and not user.has_opportunity(Opportunity.NO_DELETE_RESTRICTIONS):
-		message = await bot.send_message(user.id, get_string('delete/debounce').format(time_to_str(remaining_time)))
-		session.add(DelayedMessage(message_id=message.message_id, chat_id=user.id, delay=2))
-		session.commit()
+		DelayedMessage(
+			await bot.send_message(user.id, get_string('delete/debounce').format(time_to_str(remaining_time))),
+			2).start()
 		return
 
 	if not message.reply_to_message:
-		message = await bot.send_message(user.id, 'Вы должны ответить на сообщение, для использования данной команды.')
-		session.add(DelayedMessage(message_id=message.message_id, chat_id=user.id, delay=2))
-		session.commit()
+		DelayedMessage(
+			await bot.send_message(user.id, 'Вы должны ответить на сообщение, для использования данной команды.'),
+			2).start()
 		return
 
 	reply_to = session.scalar(select(RealMessage).where(RealMessage.id == message.reply_to_message.message_id))
 	if not reply_to:
-		message = await bot.send_message(user.id, get_string('delete/other'))
-		session.add(DelayedMessage(message_id=message.message_id, chat_id=user.id, delay=2))
-		session.commit()
+		DelayedMessage(await bot.send_message(user.id, get_string('delete/other')), 2).start()
 		return
 
 	try:
