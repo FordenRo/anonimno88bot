@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from database import User, FakeMessage, RealMessage
 from filters.command import UserCommand
-from globals import messages, bot, session
+from globals import messages, bot, session, LOG_PATH, logger_stream
 
 hide_markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Скрыть', callback_data='hide')]])
 
@@ -76,3 +76,8 @@ def time_to_str(time: int):
 		array += [f'{second} с']
 
 	return ' '.join(array)
+
+
+def save_log():
+	with open(LOG_PATH, 'w') as file:
+		file.write(logger_stream.getvalue())

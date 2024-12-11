@@ -7,7 +7,7 @@ from sqlalchemy import select
 from database import User, Opportunity, DelayedMessage, RealMessage
 from filters.command import UserCommand
 from globals import bot, session
-from utils import get_string, hide_markup
+from utils import get_string, hide_markup, time_to_str
 
 router = Router()
 

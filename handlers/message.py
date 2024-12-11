@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from database import User, RealMessage, FakeMessage, Opportunity, DelayedMessage
 from filters.user import UserFilter
-from globals import session, bot, start_time
+from globals import session, bot, START_TIME
 from utils import get_string, time_to_str
 
 router = Router()
@@ -23,7 +23,7 @@ async def message(message: Message, user: User):
 
 	debounce = get_string(f'debounce/{content_type}/delay')
 	remaining_time = int(sender.get_last_message_time(content_type) + debounce - current_time)
-	if (current_time > start_time + 5
+	if (current_time > START_TIME + 5
 			and remaining_time > 0
 			and not sender.has_opportunity(Opportunity.NO_MESSAGE_DELAY)):
 		await message.delete()

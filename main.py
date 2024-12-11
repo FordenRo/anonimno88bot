@@ -1,12 +1,14 @@
+import logging
 from asyncio import run as run_async, sleep as sleep_async, create_task, gather
 
 from aiogram import Dispatcher
 from sqlalchemy import select
 
 from database import Base, User, DelayedMessage
-from globals import bot, engine, session
+from handlers.log import LogHandler
+from globals import bot, engine, session, logger, IS_RELEASE
 from handlers import start, rules, help, markup, message, simple_commands, panel, delete
-from utils import update_user_commands
+from utils import update_user_commands, save_log
 
 
 async def delayed_messages_task():
@@ -30,6 +32,8 @@ async def main():
 	Base.metadata.create_all(engine)
 	dispatcher = Dispatcher()
 
+	logging.basicConfig(level=logging.INFO if IS_RELEASE else logging.DEBUG, handlers=[LogHandler()])
+
 	dispatcher.include_routers(start.router,
 							   rules.router,
 							   help.router,
@@ -44,11 +48,14 @@ async def main():
 
 	tasks = gather(delayed_messages_task())
 
+	logger.info('Bot has started')
 	await dispatcher.start_polling(bot)
 
 	tasks.cancel()
 	session.commit()
 	engine.dispose()
+	logger.info('Bot has stopped')
+	save_log()
 
 
 if __name__ == '__main__':
