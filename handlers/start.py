@@ -25,7 +25,8 @@ async def start(message: Message):
 		session.commit()
 
 		await bot.send_animation(user.id,
-								 FSInputFile(get_string('welcome/animation'), os.path.basename(get_string('welcome/animation'))),
+								 FSInputFile(get_string('welcome/animation'),
+											 os.path.basename(get_string('welcome/animation'))),
 								 caption=get_string('welcome/message'),
 								 reply_markup=text_inline_markup(get_string('welcome/buttons')))
 
