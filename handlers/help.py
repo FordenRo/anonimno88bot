@@ -1,5 +1,4 @@
 from aiogram import Router, F
-from aiogram.filters import Command
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, Message
 
 from filters.command import UserCommand
@@ -33,5 +32,4 @@ async def callback(callback: CallbackQuery):
 		await bot.send_message(callback.from_user.id,
 							   '<b>{0}</b>\n\n{1}'.format(*get_string('help/buttons')[section]),
 							   reply_markup=hide_markup)
-
 	await callback.answer()

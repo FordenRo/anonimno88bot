@@ -3,7 +3,7 @@ from random import randint
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, BotCommand, BotCommandScopeChat
 from sqlalchemy import select
 
-from database import User, RealMessage, FakeMessage
+from database import User, FakeMessage, RealMessage
 from filters.command import UserCommand
 from globals import messages, bot, session
 
@@ -42,6 +42,7 @@ async def update_user_commands(user: User):
 							  scope=BotCommandScopeChat(chat_id=user.id))
 
 
+# TODO
 def get_user_fake_message_from_real(real_message: RealMessage, user: User):
 	return select(FakeMessage).select_from(RealMessage.fake_messages)
 

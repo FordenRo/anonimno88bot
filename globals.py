@@ -1,11 +1,12 @@
 import time
 from logging import getLogger
-import yaml
+
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.types import LinkPreviewOptions
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from yaml import safe_load as yaml_load
 
 bot = Bot('7430750632:AAGhNMrwZwTxJTiriFvOD02hxGhcMXdVLBQ',
 		  default=DefaultBotProperties(parse_mode='HTML',
@@ -17,4 +18,4 @@ session = Session(engine)
 logger = getLogger()
 
 with open('strings.yaml', 'r', encoding='utf-8') as file:
-	messages = yaml.safe_load(file)
+	messages = yaml_load(file)

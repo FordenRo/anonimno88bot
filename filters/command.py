@@ -3,7 +3,7 @@ from aiogram.filters.command import CommandException
 from aiogram.types import Message
 from sqlalchemy import select
 
-from database import Opportunity, User, CommandOpportunity
+from database import User, CommandOpportunity
 from globals import session
 
 

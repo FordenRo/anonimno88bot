@@ -16,7 +16,9 @@ from utils import get_string, time_to_str, hide_markup
 router = Router()
 
 
-@router.message(UserCommand('panel', description=get_string('command_description/panel'), opportunity=CommandOpportunity.panel))
+@router.message(UserCommand('panel',
+							description=get_string('command_description/panel'),
+							opportunity=CommandOpportunity.panel))
 async def command(message: Message, user: User):
 	await message.delete()
 

@@ -2,7 +2,6 @@ import time
 
 from aiogram import Router
 from aiogram.filters import CommandStart
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, FSInputFile
 from sqlalchemy import exists, select
 
@@ -14,7 +13,7 @@ router = Router()
 
 
 @router.message(CommandStart())
-async def start(message: Message, state: FSMContext):
+async def start(message: Message):
 	await message.delete()
 
 	if session.query(exists(User).where(User.id == message.from_user.id)).scalar():
@@ -24,7 +23,8 @@ async def start(message: Message, state: FSMContext):
 		session.add(user)
 		session.commit()
 
-		await bot.send_animation(user.id, FSInputFile(get_string('welcome/animation'), 'welcome.gif'),
+		await bot.send_animation(user.id,
+								 FSInputFile(get_string('welcome/animation'), 'welcome.gif'),
 								 caption=get_string('welcome/message'),
 								 reply_markup=text_inline_markup(get_string('welcome/buttons')))
 

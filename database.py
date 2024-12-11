@@ -21,8 +21,6 @@ class Opportunity(Flag):
 	READ_PRIVATE_MESSAGES = 2 ** 7
 	SILENT_MUTE_BAN = 2 ** 8
 	CAN_SEE_DELETED_MESSAGES = 2 ** 9
-	# LOW_MESSAGE_DELAY = 2 ** 6
-	# LOW_DELETE_RESTRICTIONS = 2 ** 7
 
 	USER = 0
 	ADMIN = NO_MESSAGE_DELAY | NO_DELETE_RESTRICTIONS | DELETE_OTHERS_MESSAGES
@@ -65,14 +63,11 @@ class Role(Enum):
 	OWNER = 2
 	MODERATOR = 3
 
-
 	def __str__(self):
-		values = {
-			Role.USER: 'Пользователь',
-			Role.ADMIN: 'Админ',
-			Role.OWNER: 'Создатель',
-			Role.MODERATOR: 'Модератор'
-		}
+		values = {Role.USER: 'Пользователь',
+				  Role.ADMIN: 'Админ',
+				  Role.OWNER: 'Создатель',
+				  Role.MODERATOR: 'Модератор'}
 		return values[self]
 
 
@@ -89,7 +84,7 @@ class User(Base):
 	fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='user')
 	last_message_time: dict[str, int] = {}
 	last_id_reset_time: int = 0
-    last_delete_time: int = 0
+	last_delete_time: int = 0
 
 	private_with_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=True)
 	private_with: Mapped[Optional['User']] = relationship(remote_side=id)
@@ -135,9 +130,6 @@ class RealMessage(Base):
 	sender_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 	sender: Mapped['User'] = relationship(back_populates='real_messages')
 
-# private_target_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=True)
-# private_target: Mapped[Optional['User']] = relationship()
-
 
 class FakeMessage(Base):
 	__tablename__ = 'fake_messages'
@@ -177,6 +169,7 @@ class Mute(Base):
 
 	sender_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 	sender: Mapped['User'] = relationship(foreign_keys=[sender_id])
+
 
 class DelayedMessage(Base):
 	__tablename__ = 'delayed_messages'

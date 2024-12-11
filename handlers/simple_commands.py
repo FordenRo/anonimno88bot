@@ -6,7 +6,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, C
 from database import User
 from filters.command import UserCommand
 from filters.user import UserFilter
-from globals import bot, session
+from globals import bot
 from utils import hide_markup, get_string, get_unique_user_fake_id, time_to_str
 
 router = Router()

@@ -3,9 +3,9 @@ from asyncio import run as run_async, sleep as sleep_async, create_task, gather
 from aiogram import Dispatcher
 from sqlalchemy import select
 
-from handlers import start, rules, help, markup, message, simple_commands, panel
 from database import Base, User, DelayedMessage
 from globals import bot, engine, session
+from handlers import start, rules, help, markup, message, simple_commands, panel, delete
 from utils import update_user_commands
 
 
@@ -36,6 +36,7 @@ async def main():
 							   markup.router,
 							   simple_commands.router,
 							   panel.router,
+							   delete.router,
 							   message.router)
 
 	for user in session.scalars(select(User)).all():
