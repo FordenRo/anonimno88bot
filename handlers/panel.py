@@ -78,13 +78,13 @@ async def log(callback: CallbackQuery, user: User):
 	index = callback.data.split(';')[2:]
 	edit = index
 	index = int(index[0]) if index else 0
-	pages = list(batched(str(logger_stream.getvalue()).splitlines(), 20))
+	pages = list(batched(str(logger_stream.getvalue()).splitlines()[::-1], 20))
 
 	btns = []
 	if index > 0:
-		btns += [InlineKeyboardButton(text='Назад', callback_data=f'panel;user_list;{index - 1}')]
+		btns += [InlineKeyboardButton(text='Назад', callback_data=f'panel;log;{index - 1}')]
 	if index + 1 != len(pages):
-		btns += [InlineKeyboardButton(text='Вперед', callback_data=f'panel;user_list;{index + 1}')]
+		btns += [InlineKeyboardButton(text='Вперед', callback_data=f'panel;log;{index + 1}')]
 
 	control_buttons = [InlineKeyboardButton(text='Файл', callback_data='panel;log_file'),
 					   InlineKeyboardButton(text='Закрыть', callback_data='hide')]
