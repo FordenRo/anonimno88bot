@@ -89,6 +89,7 @@ class User(Base):
 	fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='user')
 	last_message_time: dict[str, int] = {}
 	last_id_reset_time: int = 0
+    last_delete_time: int = 0
 
 	private_with_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=True)
 	private_with: Mapped[Optional['User']] = relationship(remote_side=id)
