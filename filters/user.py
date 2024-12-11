@@ -1,5 +1,3 @@
-from typing import Any, Union, Dict
-
 from aiogram.filters import Filter
 from aiogram.types import Message
 from sqlalchemy import select
@@ -9,10 +7,7 @@ from globals import session
 
 
 class UserFilter(Filter):
-	def __init__(self):
-		pass
-
-	async def __call__(self, message: Message) -> Union[bool, Dict[str, Any]]:
+	async def __call__(self, message: Message) -> bool | dict[str, any]:
 		user = session.scalar(select(User).where(User.id == message.from_user.id))
 		if not user:
 			return False
