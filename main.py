@@ -46,8 +46,8 @@ async def main():
 	await dispatcher.start_polling(bot)
 
 	tasks.cancel()
-	await session.commit()
-	await engine.dispose()
+	session.commit()
+	engine.dispose()
 
 
 if __name__ == '__main__':
