@@ -42,7 +42,7 @@ async def callback(callback: CallbackQuery, user: User):
 	await callback.answer()
 
 
-@router.callback_query(F.data.split(';')[:2] == ['panel', 'user_profile'], UserFilter())
+@router.callback_query(F.data.split(';')[:2] == ['panel', 'user_list'], UserFilter())
 async def user_list(callback: CallbackQuery, user: User):
 	index = callback.data.split(';')[2:]
 	edit = index
