@@ -78,7 +78,7 @@ async def log(callback: CallbackQuery, user: User):
 	index = callback.data.split(';')[2:]
 	edit = index
 	index = int(index[0]) if index else 0
-	pages = list(batched(str(logger_stream.getvalue()).splitlines()[::-1], 20))
+	pages = list(batched(str(logger_stream.getvalue()).splitlines()[::-1], 12))
 
 	btns = []
 	if index > 0:
