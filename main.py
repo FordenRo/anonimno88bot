@@ -6,6 +6,7 @@ from aiogram.loggers import event as event_logger
 from sqlalchemy import select
 
 from database import Base, User
+from filters.log import InfoFilter
 from globals import bot, engine, session, logger, IS_RELEASE
 from handlers import start, rules, help, markup, message, simple_commands, panel, delete, private
 from handlers.log import LogHandler
@@ -16,7 +17,7 @@ async def main():
 	Base.metadata.create_all(engine)
 	dispatcher = Dispatcher()
 
-	event_logger.disabled = True
+	event_logger.addFilter(InfoFilter())
 	logging.basicConfig(level=logging.INFO if IS_RELEASE else logging.DEBUG, handlers=[LogHandler()])
 
 	dispatcher.include_routers(start.router,
