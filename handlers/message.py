@@ -10,7 +10,7 @@ from sqlalchemy import select
 
 from database import User, RealMessage, FakeMessage, Opportunity
 from filters.user import UserFilter
-from globals import session, bot, START_TIME, FILES_PATH
+from globals import session, bot, START_TIME, FILES_PATH, logger
 from handlers.delayed import DelayedMessage
 from states.private import PrivateStates
 from utils import get_string, time_to_str
@@ -27,6 +27,7 @@ async def message(message: Message, user: User, state: FSMContext):
 	file_id = getattr(getattr(message, content_type), 'file_id', None)
 	reply_to = None
 	current_time = int(time.time())
+	debug_time = time.time()
 
 	if content_type == 'photo':
 		file_id = message.photo[-1].file_id
@@ -124,3 +125,4 @@ async def message(message: Message, user: User, state: FSMContext):
 			tasks += [send(real_message, user)]
 
 	await gather(*tasks)
+	logger.debug(f'Message sent within {(time.time() - debug_time) * 1000} ms')
