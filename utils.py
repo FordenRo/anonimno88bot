@@ -68,13 +68,13 @@ def time_to_str(time: int):
 	array = []
 	if month:
 		array += [f'{month} мес']
-	if month or day:
+	if day:
 		array += [f'{day} д']
-	if not month and (day or hour):
+	if not month and hour:
 		array += [f'{hour} ч']
-	if not month and not day and (hour or minute):
+	if not month and not day and minute:
 		array += [f'{minute} м']
-	if not month and not day and not hour:
+	if not month and not day and not hour and second:
 		array += [f'{second} с']
 
 	return ' '.join(array)
