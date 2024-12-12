@@ -46,16 +46,17 @@ async def message(message: Message, user: User, state: FSMContext):
 			'real_message',
 			session.scalar(select(RealMessage).where(RealMessage.id == message.reply_to_message.message_id)))
 
-	user.last_message_time[content_type] = current_time
+	sender.last_message_time[content_type] = current_time
 	real_message = RealMessage(id=message.message_id, sender=sender, target=target, type=content_type, text=text,
 							   file_id=file_id, reply_to=reply_to, time=current_time)
 	session.add(real_message)
 	session.commit()
 
 	async def send(real_message: RealMessage, user: User):
-		text = real_message.text + f'\n\n{get_string('id/display').format(real_message.sender)}'
+		text = '\n\n'.join(([real_message.text] if real_message.text else []) + [get_string('id/display').format(real_message.sender)])
 		if real_message.target:
-			text += ' -> ' + ('<b>Вам</b>' if real_message.target == user else get_string('id/display').format(real_message.target))
+			text += ' -> ' + ('<b>Вам</b>'if real_message.target == user
+							  else get_string('id/display').format(real_message.target))
 
 		if user.has_opportunity(Opportunity.CAN_SEE_USERNAMES):
 			chat = await bot.get_chat(real_message.sender.id)
