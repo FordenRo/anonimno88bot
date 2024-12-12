@@ -2,6 +2,7 @@ import logging
 from asyncio import run as run_async
 
 from aiogram import Dispatcher
+from aiogram.loggers import event as event_logger
 from sqlalchemy import select
 
 from database import Base, User
@@ -15,6 +16,7 @@ async def main():
 	Base.metadata.create_all(engine)
 	dispatcher = Dispatcher()
 
+	event_logger.disabled = True
 	logging.basicConfig(level=logging.INFO if IS_RELEASE else logging.DEBUG, handlers=[LogHandler()])
 
 	dispatcher.include_routers(start.router,
