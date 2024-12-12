@@ -7,7 +7,6 @@ from database import User
 from filters.command import UserCommand
 from filters.user import UserFilter
 from globals import bot, session
-from handlers.delayed import DelayedMessage
 from states.private import PrivateStates
 from utils import get_string, cancel_markup, hide_markup
 
@@ -23,7 +22,7 @@ async def command(message: Message, user: User, state: FSMContext):
 
 
 @router.message(UserFilter(), PrivateStates.user)
-async def message(message: Message, user: User, state: FSMContext):
+async def user(message: Message, user: User, state: FSMContext):
 	await (await state.get_value('message')).delete()
 	await message.delete()
 
