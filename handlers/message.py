@@ -1,6 +1,8 @@
+import os.path
 import time
-from asyncio import gather
+from asyncio import gather, create_task
 
+from aiofiles.os import makedirs
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyParameters
@@ -8,7 +10,7 @@ from sqlalchemy import select
 
 from database import User, RealMessage, FakeMessage, Opportunity
 from filters.user import UserFilter
-from globals import session, bot, START_TIME
+from globals import session, bot, START_TIME, FILES_PATH
 from handlers.delayed import DelayedMessage
 from states.private import PrivateStates
 from utils import get_string, time_to_str
@@ -25,7 +27,7 @@ async def message(message: Message, user: User, state: FSMContext):
 	file_id = getattr(getattr(message, content_type), 'file_id', None)
 	reply_to = None
 	current_time = int(time.time())
-	
+
 	if content_type == 'photo':
 		file_id = message.photo[-1].file_id
 
@@ -98,6 +100,16 @@ async def message(message: Message, user: User, state: FSMContext):
 		fake_message = FakeMessage(id=message.message_id, real_message=real_message, user=user)
 		session.add(fake_message)
 		session.commit()
+
+	async def save_message(real_message: RealMessage):
+		file = await bot.get_file(real_message.file_id)
+		path = os.path.join(FILES_PATH, str(real_message.sender_id), real_message.type,
+							os.path.basename(file.file_path))
+		await makedirs(os.path.dirname(path), exist_ok=True)
+		await bot.download(real_message.file_id, path)
+
+	if real_message.file_id:
+		create_task(save_message(real_message))
 
 	tasks = []
 	if state == PrivateStates.message:
