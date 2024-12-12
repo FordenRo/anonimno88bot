@@ -14,7 +14,8 @@ async def command(message: Message):
 	await bot.send_message(message.from_user.id, get_string('help/message'),
 						   reply_markup=InlineKeyboardMarkup(
 							   inline_keyboard=[[InlineKeyboardButton(text=data[0], callback_data=f'help;{i}')] for
-												i, data in enumerate(get_string('help/buttons'))]))
+												i, data in enumerate(get_string('help/buttons'))]
+											   + [[InlineKeyboardButton(text='Скрыть', callback_data='hide')]]))
 
 
 @router.callback_query(F.data.split(';')[0] == 'help')
