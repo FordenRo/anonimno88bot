@@ -154,7 +154,8 @@ help:
       с ответом, либо без.'
   message: <b>Помощь</b>
 id:
-  message: 'Вы: {0.role!s} №{0.fake_id}'
+  message: 'Вы: $id/display$'
+  display: '{0.role!s} №{0.fake_id}'
   alert: 'У вас сбросится ваш айди!
 
     <i>Вы уверены?</i>'
@@ -206,7 +207,7 @@ private:
   error:
     value: Номер пользователя может быть только числовым
     user: Данный пользователь не найден
-  joined: Теперь вы в приватном чате с {0.role!s} №{0.fake_id}
+  joined: Теперь вы в приватном чате с $id/display$
   exited: Вы вышли из приватного чата
   exit: Выйти из приватного чата
 panel:

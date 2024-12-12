@@ -50,9 +50,9 @@ async def message(message: Message, user: User, state: FSMContext):
 	session.commit()
 
 	async def send(real_message: RealMessage, user: User):
-		text = real_message.text + '\n\n{0.role!s} №{0.fake_id}'.format(real_message.sender)
+		text = real_message.text + f'\n\n{get_string('id/display').format(real_message.sender)}'
 		if real_message.target:
-			text += ' -> ' + ('<b>Вам</b>' if real_message.target == user else '{0.role!s} №{0.fake_id}'.format(real_message.target))
+			text += ' -> ' + ('<b>Вам</b>' if real_message.target == user else get_string('id/display').format(real_message.target))
 
 		if user.has_opportunity(Opportunity.CAN_SEE_USERNAMES):
 			chat = await bot.get_chat(real_message.sender.id)
