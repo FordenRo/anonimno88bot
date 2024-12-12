@@ -1,4 +1,5 @@
 from random import randint
+from aiofiles import open
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, BotCommand, BotCommandScopeChat
 from sqlalchemy import select
@@ -79,6 +80,6 @@ def time_to_str(time: int):
 	return ' '.join(array)
 
 
-def save_log():
-	with open(LOG_PATH, 'w') as file:
-		file.write(logger_stream.getvalue())
+async def save_log():
+	async with open(LOG_PATH, 'w') as file:
+		await file.write(logger_stream.getvalue())

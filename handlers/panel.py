@@ -103,6 +103,6 @@ async def log(callback: CallbackQuery, user: User):
 @router.callback_query(F.data == 'panel;log_file', UserFilter())
 async def send_log_file(callback: CallbackQuery, user: User):
 	await callback.answer('Отправление...')
-	save_log()
+	await save_log()
 	await bot.send_document(user.id, FSInputFile(LOG_PATH, os.path.basename(LOG_PATH)),
 							reply_markup=hide_markup, protect_content=False)

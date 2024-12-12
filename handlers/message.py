@@ -97,7 +97,6 @@ async def message(message: Message, user: User, state: FSMContext):
 
 	tasks = []
 	if state == PrivateStates.message:
-		print('test')
 		target = await state.get_value('target')
 		tasks += [send(real_message, target)]
 	else:

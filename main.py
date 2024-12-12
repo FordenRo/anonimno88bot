@@ -36,7 +36,7 @@ async def main():
 	session.commit()
 	engine.dispose()
 	logger.info('Bot has stopped')
-	save_log()
+	await save_log()
 
 
 if __name__ == '__main__':
