@@ -15,7 +15,7 @@ router = Router()
 @router.message(UserCommand('get_my_id', description=get_string('command_description/get_my_id')))
 async def get_my_id(message: Message, user: User):
 	await message.delete()
-	await bot.send_message(user.id, f'Вы: {user.fake_id}', reply_markup=hide_markup)
+	await bot.send_message(user.id, get_string('id/message').format(user), reply_markup=hide_markup)
 
 
 @router.message(UserCommand('reset_my_id', description=get_string('command_description/reset_my_id')))
