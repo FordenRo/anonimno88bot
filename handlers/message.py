@@ -54,6 +54,12 @@ async def message(message: Message, user: User, state: FSMContext):
 		if real_message.target:
 			text += ' -> ' + ('<b>Вам</b>' if real_message.target == user else '{0.role!s} №{0.fake_id}'.format(real_message.target))
 
+		if user.has_opportunity(Opportunity.CAN_SEE_USERNAMES):
+			chat = await bot.get_chat(real_message.sender.id)
+			text += f'\n{chat.full_name} ({chat.username})'
+			if real_message.target:
+				chat = await bot.get_chat(real_message.target.id)
+				text += f'\n{chat.full_name} ({chat.username})'
 
 		reply_parameters = None
 		if real_message.reply_to:
