@@ -80,7 +80,7 @@ class User(Base):
 	joined_time: Mapped[int] = mapped_column()
 	ban: Mapped['Ban'] = relationship(back_populates='user', primaryjoin='User.id == Ban.user_id')
 	mute: Mapped['Mute'] = relationship(back_populates='user', primaryjoin='User.id == Mute.user_id')
-	real_messages: Mapped[list['RealMessage']] = relationship(back_populates='sender')
+	real_messages: Mapped[list['RealMessage']] = relationship(back_populates='sender', foreign_keys='RealMessage.sender_id')
 	fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='user')
 	last_message_time: dict[str, int] = {}
 	last_id_reset_time: int = 0
@@ -128,7 +128,10 @@ class RealMessage(Base):
 	reply_to: Mapped[Optional['RealMessage']] = relationship()
 
 	sender_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-	sender: Mapped['User'] = relationship(back_populates='real_messages')
+	sender: Mapped['User'] = relationship(back_populates='real_messages', foreign_keys=[sender_id])
+
+	target_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=True)
+	target: Mapped[Optional['User']] = relationship(foreign_keys=[target_id])
 
 
 class FakeMessage(Base):

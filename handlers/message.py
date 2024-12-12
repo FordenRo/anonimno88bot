@@ -1,6 +1,8 @@
 import time
+from asyncio import gather
 
 from aiogram import Router
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyParameters
 from sqlalchemy import select
 
@@ -8,14 +10,16 @@ from database import User, RealMessage, FakeMessage, Opportunity
 from filters.user import UserFilter
 from globals import session, bot, START_TIME
 from handlers.delayed import DelayedMessage
+from states.private import PrivateStates
 from utils import get_string, time_to_str
 
 router = Router()
 
 
 @router.message(UserFilter())
-async def message(message: Message, user: User):
+async def message(message: Message, user: User, state: FSMContext):
 	sender = user
+	target = await state.get_value('target')
 	text = message.text or message.caption
 	content_type = message.content_type.name.lower()
 	file_id = getattr(getattr(message, content_type), 'file_id', None)
@@ -40,12 +44,13 @@ async def message(message: Message, user: User):
 			session.scalar(select(RealMessage).where(RealMessage.id == message.reply_to_message.message_id)))
 
 	user.last_message_time[content_type] = current_time
-	real_message = RealMessage(id=message.message_id, sender=sender, type=content_type, text=text,
+	real_message = RealMessage(id=message.message_id, sender=sender, target=target, type=content_type, text=text,
 							   file_id=file_id, reply_to=reply_to, time=current_time)
 	session.add(real_message)
 	session.commit()
 
 	for user in session.scalars(select(User).where(User.id != sender.id)):
+	async def send(real_message: RealMessage, user: User):
 		reply_parameters = None
 		if real_message.reply_to:
 			if real_message.reply_to.sender == user:
@@ -70,8 +75,23 @@ async def message(message: Message, user: User):
 			'animation': lambda: bot.send_animation(animation=real_message.file_id, caption=text, **kwargs),
 			'document': lambda: bot.send_document(document=real_message.file_id, caption=text, **kwargs)
 		}
-		message: Message = await types[real_message.type]()
+
+		try:
+			message: Message = await types[real_message.type]()
+		except:
+			return
 
 		fake_message = FakeMessage(id=message.message_id, real_message=real_message, user=user)
 		session.add(fake_message)
 		session.commit()
+
+	tasks = []
+	if state == PrivateStates.message:
+		print('test')
+		target = await state.get_value('target')
+		tasks += [send(real_message, target)]
+	else:
+		for user in session.scalars(select(User).where(User.id != sender.id)):
+			tasks += [send(real_message, user)]
+
+	await gather(*tasks)
