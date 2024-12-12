@@ -49,8 +49,12 @@ async def message(message: Message, user: User, state: FSMContext):
 	session.add(real_message)
 	session.commit()
 
-	for user in session.scalars(select(User).where(User.id != sender.id)):
 	async def send(real_message: RealMessage, user: User):
+		text = real_message.text + '\n\n{0.role!s} №{0.fake_id}'.format(real_message.sender)
+		if real_message.target:
+			text += ' -> ' + ('<b>Вам</b>' if real_message.target == user else '{0.role!s} №{0.fake_id}'.format(real_message.target))
+
+
 		reply_parameters = None
 		if real_message.reply_to:
 			if real_message.reply_to.sender == user:
