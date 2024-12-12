@@ -25,6 +25,9 @@ async def message(message: Message, user: User, state: FSMContext):
 	file_id = getattr(getattr(message, content_type), 'file_id', None)
 	reply_to = None
 	current_time = int(time.time())
+	
+	if content_type == 'photo':
+		file_id = message.photo[-1].file_id
 
 	debounce = get_string(f'debounce/{content_type}/delay')
 	remaining_time = int(sender.get_last_message_time(content_type) + debounce - current_time)
