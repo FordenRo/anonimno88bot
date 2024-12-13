@@ -9,7 +9,7 @@ from sqlalchemy import exists, select
 
 from database import User, Opportunity, Role
 from globals import session, bot
-from utils import get_string, text_inline_markup, update_user_commands, get_unique_user_fake_id, hide_markup
+from utils import get_section, text_inline_markup, update_user_commands, get_unique_user_fake_id, hide_markup
 
 router = Router()
 
@@ -31,10 +31,10 @@ async def start(message: Message):
 		create_task(new_user_notification(user))
 
 		await bot.send_animation(user.id,
-								 FSInputFile(get_string('welcome/animation'),
-											 os.path.basename(get_string('welcome/animation'))),
-								 caption=get_string('welcome/message'),
-								 reply_markup=text_inline_markup(get_string('welcome/buttons')))
+								 FSInputFile(get_section('welcome/animation'),
+											 os.path.basename(get_section('welcome/animation'))),
+								 caption=get_section('welcome/message'),
+								 reply_markup=text_inline_markup(get_section('welcome/buttons')))
 
 	await update_user_commands(user)
 

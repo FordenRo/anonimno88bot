@@ -14,7 +14,7 @@ from filters.user import UserFilter
 from globals import session, bot, START_TIME, FILES_PATH, logger
 from handlers.delayed import DelayedMessage
 from states.private import PrivateStates
-from utils import get_string, time_to_str
+from utils import get_section, time_to_str
 
 router = Router()
 
@@ -33,14 +33,14 @@ async def message(message: Message, user: User, state: FSMContext):
 	if content_type == 'photo':
 		file_id = message.photo[-1].file_id
 
-	debounce = get_string(f'debounce/{content_type}/delay')
+	debounce = get_section(f'debounce/{content_type}/delay')
 	remaining_time = int(sender.get_last_message_time(content_type) + debounce - current_time)
 	if (current_time > START_TIME + 5
 			and remaining_time > 0
 			and not sender.has_opportunity(Opportunity.NO_MESSAGE_DELAY)):
 		await message.delete()
 
-		DelayedMessage(await bot.send_message(sender.id, get_string(f'debounce/{content_type}/message')
+		DelayedMessage(await bot.send_message(sender.id, get_section(f'debounce/{content_type}/message')
 											  .format(time_to_str(remaining_time))), 2).start()
 		return
 
@@ -58,11 +58,11 @@ async def message(message: Message, user: User, state: FSMContext):
 
 	async def send(real_message: RealMessage, user: User):
 		text = '\n\n'.join(([real_message.text] if real_message.text else [])
-						   + [get_string('id/display').format(real_message.sender)])
+						   + [get_section('id/display').format(real_message.sender)])
 		kbtext = f'№{real_message.sender.fake_id}'
 		if real_message.target:
 			text += ' -> ' + ('<b>Вам</b>' if real_message.target == user
-							  else get_string('id/display').format(real_message.target))
+							  else get_section('id/display').format(real_message.target))
 			kbtext += ' -> ' + ('Вам' if real_message.target == user
 								else f'№{real_message.target.fake_id}')
 
@@ -139,5 +139,5 @@ async def message(message: Message, user: User, state: FSMContext):
 async def kbmessage(callback: CallbackQuery):
 	id = int(callback.data.split(';')[1])
 	real_message = session.scalar(select(RealMessage).where(RealMessage.id == id))
-	text = get_string('id/display').format(real_message.sender)
+	text = get_section('id/display').format(real_message.sender)
 	await callback.answer(text)

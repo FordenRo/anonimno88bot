@@ -24,5 +24,5 @@ engine = create_engine('sqlite:///testdatabase.db')
 session = Session(engine)
 logger = getLogger()
 
-with open('strings.yaml', 'r', encoding='utf-8') as file:
-	messages = yaml_load(file)
+with open('config.yaml', 'r', encoding='utf-8') as file:
+	config = yaml_load(file)

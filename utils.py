@@ -6,24 +6,24 @@ from sqlalchemy import select
 
 from database import User, FakeMessage, RealMessage
 from filters.command import UserCommand
-from globals import messages, bot, session, LOG_PATH, logger_stream
+from globals import config, bot, session, LOG_PATH, logger_stream
 
 hide_markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Скрыть', callback_data='hide')]])
 cancel_markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Отмена', callback_data='cancel')]])
 
 
-def get_string(path: str) -> any:
+def get_section(path: str) -> any:
 	def parse(text: str):
 		start = text.find('$') + 1
 		if start == 0:
 			return text
 		end = text.find('$', start)
-		replace = get_string(text[start:end])
+		replace = get_section(text[start:end])
 		text = text[:start - 1] + replace + text[end + 1:]
 		return parse(text)
 
 	path = path.split('/')
-	obj = messages
+	obj = config
 	for section in path:
 		obj = obj[section]
 	if isinstance(obj, str):

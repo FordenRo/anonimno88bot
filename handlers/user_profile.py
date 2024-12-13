@@ -8,16 +8,16 @@ from filters.command import UserCommand
 from filters.user import UserFilter
 from globals import bot, session
 from states.user_profile import UserProfileStates
-from utils import hide_markup, cancel_markup, get_string
+from utils import hide_markup, cancel_markup, get_section
 
 router = Router()
 
 
-@router.message(UserCommand('user_profile', description=get_string('command_description/user_profile'),
+@router.message(UserCommand('user_profile', description=get_section('command_description/user_profile'),
 							opportunity=CommandOpportunity.user_profile))
 async def command(message: Message, user: User, state: FSMContext):
 	await message.delete()
-	msg = await bot.send_message(user.id, get_string('user_profile/user'), reply_markup=cancel_markup)
+	msg = await bot.send_message(user.id, get_section('user_profile/user'), reply_markup=cancel_markup)
 	await state.set_state(UserProfileStates.user)
 	await state.set_data({'message': msg})
 
@@ -31,16 +31,16 @@ async def user(message: Message, user: User, state: FSMContext):
 	try:
 		target_id = int(message.text)
 	except ValueError:
-		await bot.send_message(user.id, get_string('user_profile/error/value'), reply_markup=hide_markup)
+		await bot.send_message(user.id, get_section('user_profile/error/value'), reply_markup=hide_markup)
 		return
 
 	target = session.scalar(select(User).where(User.fake_id == target_id))
 	if not target:
-		await bot.send_message(user.id, get_string('user_profile/error/user'), reply_markup=hide_markup)
+		await bot.send_message(user.id, get_section('user_profile/error/user'), reply_markup=hide_markup)
 		return
 
 	chat = await bot.get_chat(target.id)
-	text = f"{get_string('id/display').format(target)} {chat.full_name}"
+	text = f"{get_section('id/display').format(target)} {chat.full_name}"
 	if chat.username:
 		text += f' (@{chat.username})'
 	text += f'ID: {target.id}'

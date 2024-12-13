@@ -12,13 +12,13 @@ from database import User, AdminPanelOpportunity, CommandOpportunity
 from filters.command import UserCommand
 from filters.user import UserFilter
 from globals import bot, session, START_TIME, logger_stream, LOG_PATH
-from utils import get_string, time_to_str, hide_markup, save_log
+from utils import get_section, time_to_str, hide_markup, save_log
 
 router = Router()
 
 
 @router.message(UserCommand('panel',
-							description=get_string('command_description/panel'),
+							description=get_section('command_description/panel'),
 							opportunity=CommandOpportunity.panel))
 async def command(message: Message, user: User):
 	await message.delete()
@@ -26,10 +26,10 @@ async def command(message: Message, user: User):
 	reply_markup = InlineKeyboardMarkup(
 		inline_keyboard=[[InlineKeyboardButton(text=button[0], callback_data=button[1]) for button in row
 						  if len(button) < 3 or user.has_admin_panel_opportunity(AdminPanelOpportunity[button[2]])]
-						 for row in get_string('panel/buttons')])
+						 for row in get_section('panel/buttons')])
 
 	await bot.send_photo(user.id,
-						 FSInputFile(get_string('panel/image'), os.path.basename(get_string('panel/image'))),
+						 FSInputFile(get_section('panel/image'), os.path.basename(get_section('panel/image'))),
 						 reply_markup=reply_markup)
 
 
