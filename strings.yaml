@@ -210,6 +210,26 @@ private:
   joined: Теперь вы в приватном чате с $id/display$
   exited: Вы вышли из приватного чата
   exit: Выйти из приватного чата
+warn:
+  command:
+    user: Введите номер пользователя
+    type: Выберите тип
+    error:
+      value: Номер пользователя может быть только числовым
+      user: Данный пользователь не найден
+      type: Данный тип не найден
+  broadcast: '{target.role!s} №{target.fake_id} получает предупреждение ({count}/{after})
+  
+              Выдал: {sender.role!s} №{sender.fake_id}
+              
+              Причина: {reason}'
+  user: 'Вы получили предупреждение ({count}/{after})
+  
+         Будет снято через {expire}
+  
+         Выдал: {sender.role!s} №{sender.fake_id}
+         
+         Причина: {reason}'
 panel:
   buttons:
     - - - Статистика
@@ -413,3 +433,4 @@ command_description:
   panel: Открыть админ-панель
   delete: Удалить свое сообщение
   private: Приватный чат
+  warn: Выдать предупреждение

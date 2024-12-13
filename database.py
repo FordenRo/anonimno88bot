@@ -80,6 +80,7 @@ class User(Base):
 	joined_time: Mapped[int] = mapped_column()
 	ban: Mapped['Ban'] = relationship(back_populates='user', primaryjoin='User.id == Ban.user_id')
 	mute: Mapped['Mute'] = relationship(back_populates='user', primaryjoin='User.id == Mute.user_id')
+	warns: Mapped[list['Warn']] = relationship(back_populates='user', primaryjoin='User.id == Warn.user_id')
 	real_messages: Mapped[list['RealMessage']] = relationship(back_populates='sender', foreign_keys='RealMessage.sender_id')
 	fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='user')
 	last_message_time: dict[str, int] = {}
@@ -169,6 +170,20 @@ class Mute(Base):
 
 	user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 	user: Mapped['User'] = relationship(back_populates='mute', foreign_keys=[user_id])
+
+	sender_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+	sender: Mapped['User'] = relationship(foreign_keys=[sender_id])
+
+
+class Warn(Base):
+	__tablename__ = 'warns'
+
+	id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+	time: Mapped[int] = mapped_column()
+	section: Mapped[int] = mapped_column()
+
+	user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+	user: Mapped['User'] = relationship(back_populates='warns', foreign_keys=[user_id])
 
 	sender_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 	sender: Mapped['User'] = relationship(foreign_keys=[sender_id])
