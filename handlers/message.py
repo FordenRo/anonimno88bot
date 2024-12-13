@@ -3,9 +3,10 @@ import time
 from asyncio import gather, create_task
 
 from aiofiles.os import makedirs
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyParameters
+from aiogram.types import Message, ReplyParameters,\
+	InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from sqlalchemy import select
 
 from database import User, RealMessage, FakeMessage, Opportunity
@@ -57,9 +58,12 @@ async def message(message: Message, user: User, state: FSMContext):
 
 	async def send(real_message: RealMessage, user: User):
 		text = '\n\n'.join(([real_message.text] if real_message.text else []) + [get_string('id/display').format(real_message.sender)])
+		kbtext = f'№{real_message.sender.fake_id}'
 		if real_message.target:
 			text += ' -> ' + ('<b>Вам</b>'if real_message.target == user
 							  else get_string('id/display').format(real_message.target))
+			kbtext += ' -> ' + ('Вам' if real_message.target == user
+							  else f'№{real_message.target.fake_id}')
 
 		if user.has_opportunity(Opportunity.CAN_SEE_USERNAMES):
 			chat = await bot.get_chat(real_message.sender.id)
@@ -81,12 +85,13 @@ async def message(message: Message, user: User, state: FSMContext):
 
 		kwargs = {'chat_id': user.id,
 				  'reply_parameters': reply_parameters}
+		markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=kbtext, callback_data=f'kbmessage;{real_message.id}')]])
 		types = {
 			'text': lambda: bot.send_message(text=text, **kwargs),
 			'voice': lambda: bot.send_voice(voice=real_message.file_id, caption=text, **kwargs),
-			'sticker': lambda: bot.send_sticker(sticker=real_message.file_id, **kwargs),
+			'sticker': lambda: bot.send_sticker(sticker=real_message.file_id, reply_markup=markup, **kwargs),
 			'photo': lambda: bot.send_photo(photo=real_message.file_id, caption=text, **kwargs),
-			'video_note': lambda: bot.send_video_note(video_note=real_message.file_id, **kwargs),
+			'video_note': lambda: bot.send_video_note(video_note=real_message.file_id, reply_markup=markup, **kwargs),
 			'audio': lambda: bot.send_audio(audio=real_message.file_id, caption=text, **kwargs),
 			'video': lambda: bot.send_video(video=real_message.file_id, caption=text, **kwargs),
 			'animation': lambda: bot.send_animation(animation=real_message.file_id, caption=text, **kwargs),
@@ -126,3 +131,12 @@ async def message(message: Message, user: User, state: FSMContext):
 
 	await gather(*tasks)
 	logger.debug(f'Message sent within {(time.time() - debug_time) * 1000} ms')
+
+
+@router.callback_query(F.data.split(';')[0] == 'kbmessage')
+async def kbmessage(callback: CallbackQuery):
+	id = int(callback.data.split(';')[1])
+	real_message = session.scalar(select(RealMessage).where(RealMessage.id == id))
+	text = get_string('id/display').format(real_message.sender)
+	await callback.answer(text)
+
