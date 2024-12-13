@@ -284,33 +284,39 @@ rules:
     - text: Оскорбление родных/близких
       penalty:
         type: mute
-        after: 2
-        value: 21600
+        after: 1
+        expire: 14
+        duration: 24
     - text: Спам сообщениями без какого-либо контекста
       penalty:
         type: mute
         after: 3
-        value: 300
+        expire: 3
+        duration: 2
     - text: Грубые оскорбления в сторону кого-либо
       penalty:
         type: mute
-        after: 3
-        value: 7200
+        after: 2
+        expire: 5
+        duration: 4
     - text: Слив данных пользователей
       penalty:
         type: mute
-        after: 2
-        value: 86400
+        after: 1
+        expire: 14
+        duration: 24
     - text: Реклама
       penalty:
         type: mute
-        after: 3
-        value: 3600
+        after: 2
+        expire: 3
+        duration: 1
     - text: Сообщения, содержащие расчленение/изнасилование
       penalty:
         type: mute
-        after: 3
-        value: 7200
+        after: 2
+        expire: 7
+        duration: 3
   title: 📋 <b>Правила</b> 📋
   section: '<b><i>{index}.</i> {text}</b>
 
