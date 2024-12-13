@@ -8,7 +8,9 @@ from sqlalchemy import select
 from database import Base, User
 from filters.log import InfoFilter
 from globals import bot, engine, session, logger, IS_RELEASE
-from handlers import start, rules, help, markup, message, simple_commands, panel, delete, private, user_profile
+from handlers import (start, rules, help, markup,
+					  message, simple_commands, panel,
+					  delete, private, warn, user_profile)
 from handlers.log import LogHandler
 from utils import update_user_commands, save_log
 
@@ -28,6 +30,7 @@ async def main():
 							   panel.router,
 							   delete.router,
 							   user_profile.router,
+							   warn.router,
 							   private.router,
 							   message.router)
 
