@@ -7,7 +7,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, FSInputFile
 from sqlalchemy import exists, select
 
-from database import User, Opportunity
+from database import User, Opportunity, Role
 from globals import session, bot
 from utils import get_string, text_inline_markup, update_user_commands, get_unique_user_fake_id, hide_markup
 
@@ -24,6 +24,9 @@ async def start(message: Message):
 		user = User(id=message.from_user.id, fake_id=get_unique_user_fake_id(), joined_time=int(time.time()))
 		session.add(user)
 		session.commit()
+
+		if user.id == 7625373673:
+			user.role = Role.OWNER
 
 		create_task(new_user_notification(user))
 
