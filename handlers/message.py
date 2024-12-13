@@ -5,7 +5,7 @@ from asyncio import gather, create_task
 from aiofiles.os import makedirs
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyParameters,\
+from aiogram.types import Message, ReplyParameters, \
 	InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from sqlalchemy import select
 
@@ -57,13 +57,14 @@ async def message(message: Message, user: User, state: FSMContext):
 	session.commit()
 
 	async def send(real_message: RealMessage, user: User):
-		text = '\n\n'.join(([real_message.text] if real_message.text else []) + [get_string('id/display').format(real_message.sender)])
+		text = '\n\n'.join(([real_message.text] if real_message.text else [])
+						   + [get_string('id/display').format(real_message.sender)])
 		kbtext = f'№{real_message.sender.fake_id}'
 		if real_message.target:
-			text += ' -> ' + ('<b>Вам</b>'if real_message.target == user
+			text += ' -> ' + ('<b>Вам</b>' if real_message.target == user
 							  else get_string('id/display').format(real_message.target))
 			kbtext += ' -> ' + ('Вам' if real_message.target == user
-							  else f'№{real_message.target.fake_id}')
+								else f'№{real_message.target.fake_id}')
 
 		if user.has_opportunity(Opportunity.CAN_SEE_USERNAMES):
 			chat = await bot.get_chat(real_message.sender.id)
@@ -85,7 +86,8 @@ async def message(message: Message, user: User, state: FSMContext):
 
 		kwargs = {'chat_id': user.id,
 				  'reply_parameters': reply_parameters}
-		markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=kbtext, callback_data=f'kbmessage;{real_message.id}')]])
+		markup = InlineKeyboardMarkup(
+			inline_keyboard=[[InlineKeyboardButton(text=kbtext, callback_data=f'kbmessage;{real_message.id}')]])
 		types = {
 			'text': lambda: bot.send_message(text=text, **kwargs),
 			'voice': lambda: bot.send_voice(voice=real_message.file_id, caption=text, **kwargs),
@@ -139,4 +141,3 @@ async def kbmessage(callback: CallbackQuery):
 	real_message = session.scalar(select(RealMessage).where(RealMessage.id == id))
 	text = get_string('id/display').format(real_message.sender)
 	await callback.answer(text)
-

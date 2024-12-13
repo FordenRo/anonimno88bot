@@ -18,7 +18,8 @@ async def open(user: User):
 															   after=section['penalty']['after'],
 															   text=section['text'],
 															   type=penalty_types[section['penalty']['type']],
-															   time=time_to_str(section['penalty']['duration'] * 60 * 60))
+															   time=time_to_str(
+																   section['penalty']['duration'] * 60 * 60))
 							for i, section in enumerate(get_string('rules/sections'))])
 
 	await bot.send_message(user.id,

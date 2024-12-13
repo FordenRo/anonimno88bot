@@ -1,19 +1,20 @@
 from aiogram import Router
-from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 from sqlalchemy import select
 
 from database import User, CommandOpportunity
 from filters.command import UserCommand
 from filters.user import UserFilter
-from states.user_profile import UserProfileStates
 from globals import bot, session
+from states.user_profile import UserProfileStates
 from utils import hide_markup, cancel_markup, get_string
 
 router = Router()
 
 
-@router.message(UserCommand('user_profile', description=get_string('command_description/user_profile'), opportunity=CommandOpportunity.user_profile))
+@router.message(UserCommand('user_profile', description=get_string('command_description/user_profile'),
+							opportunity=CommandOpportunity.user_profile))
 async def command(message: Message, user: User, state: FSMContext):
 	await message.delete()
 	msg = await bot.send_message(user.id, get_string('user_profile/user'), reply_markup=cancel_markup)
@@ -47,4 +48,3 @@ async def user(message: Message, user: User, state: FSMContext):
 		text += f'\nBIO: {chat.bio}'
 
 	await bot.send_message(user.id, text, reply_markup=hide_markup)
-

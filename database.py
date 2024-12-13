@@ -81,7 +81,8 @@ class User(Base):
 	ban: Mapped['Ban'] = relationship(back_populates='user', primaryjoin='User.id == Ban.user_id')
 	mute: Mapped['Mute'] = relationship(back_populates='user', primaryjoin='User.id == Mute.user_id')
 	warns: Mapped[list['Warn']] = relationship(back_populates='user', primaryjoin='User.id == Warn.user_id')
-	real_messages: Mapped[list['RealMessage']] = relationship(back_populates='sender', foreign_keys='RealMessage.sender_id')
+	real_messages: Mapped[list['RealMessage']] = relationship(back_populates='sender',
+															  foreign_keys='RealMessage.sender_id')
 	fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='user')
 	last_message_time: dict[str, int] = {}
 	last_id_reset_time: int = 0
