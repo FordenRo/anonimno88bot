@@ -14,11 +14,11 @@ IS_RELEASE = 'release' in sys.argv
 START_TIME = int(time.time())
 LOG_PATH = 'release.log' if IS_RELEASE else 'debug.log'
 FILES_PATH = 'files' if IS_RELEASE else 'testfiles'
+TOKEN = '7968306540:AAFxs5V5AdedRzDiMqTpn9l1etMj-16wPBo' if IS_RELEASE else '7430750632:AAGhNMrwZwTxJTiriFvOD02hxGhcMXdVLBQ'
 
-bot = Bot('7430750632:AAGhNMrwZwTxJTiriFvOD02hxGhcMXdVLBQ',
-		  default=DefaultBotProperties(parse_mode='HTML',
-									   protect_content=True,
-									   link_preview=LinkPreviewOptions(is_disabled=True)))
+bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode='HTML',
+											  protect_content=True,
+											  link_preview=LinkPreviewOptions(is_disabled=True)))
 logger_stream = StringIO()
 engine = create_engine('sqlite:///testdatabase.db')
 session = Session(engine)
