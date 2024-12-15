@@ -1,5 +1,5 @@
 import logging
-from asyncio import run as run_async
+from asyncio import run as run_async, gather
 
 from aiogram import Dispatcher
 from aiogram.loggers import event as event_logger
@@ -34,8 +34,10 @@ async def main():
 							   private.router,
 							   message.router)
 
+	tasks = []
 	for user in session.scalars(select(User)).all():
-		await update_user_commands(user)
+		tasks += [update_user_commands(user)]
+	await gather(*tasks)
 
 	logger.info('Bot has started')
 	await dispatcher.start_polling(bot)
