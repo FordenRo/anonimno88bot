@@ -110,6 +110,9 @@ async def message(message: Message, user: User, state: FSMContext):
 		session.commit()
 
 	async def save_message(real_message: RealMessage):
+		if real_message.type in ['sticker', 'animation']:
+			return
+
 		file = await bot.get_file(real_message.file_id)
 		path = os.path.join(FILES_PATH, str(real_message.sender_id), real_message.type,
 							os.path.basename(file.file_path))
