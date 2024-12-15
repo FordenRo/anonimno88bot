@@ -1,5 +1,5 @@
 import logging
-from asyncio import run as run_async, gather
+from asyncio import run as run_async, gather, CancelledError
 
 from aiogram import Dispatcher
 from aiogram.loggers import event as event_logger
@@ -40,7 +40,11 @@ async def main():
 	await gather(*tasks)
 
 	logger.info('Bot has started')
-	await dispatcher.start_polling(bot)
+
+	try:
+		await dispatcher.start_polling(bot)
+	except CancelledError:
+		pass
 
 	session.commit()
 	engine.dispose()
