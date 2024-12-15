@@ -84,7 +84,7 @@ class User(Base):
 	real_messages: Mapped[list['RealMessage']] = relationship(back_populates='sender',
 															  foreign_keys='RealMessage.sender_id')
 	fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='user')
-	last_message_time: dict[str, int] = {}
+	last_message_time: dict['User', dict[str, int]] = {}
 	last_id_reset_time: int = 0
 	last_delete_time: int = 0
 
@@ -113,7 +113,15 @@ class User(Base):
 		return opportunity in self.admin_panel_opportunities
 
 	def get_last_message_time(self, type: str):
-		return self.last_message_time.get(type) or 0
+		message_time = User.last_message_time.get(self)
+		return (message_time.get(type) or 0) if message_time else 0
+
+	def set_last_message_time(self, type: str, time: int):
+		message_time = User.last_message_time.get(self)
+		if not message_time:
+			User.last_message_time[self] = {}
+			message_time = User.last_message_time[self]
+		message_time[type] = time
 
 
 class RealMessage(Base):

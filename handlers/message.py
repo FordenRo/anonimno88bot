@@ -50,7 +50,7 @@ async def message(message: Message, user: User, state: FSMContext):
 			'real_message',
 			session.scalar(select(RealMessage).where(RealMessage.id == message.reply_to_message.message_id)))
 
-	sender.last_message_time[content_type] = current_time
+	sender.set_last_message_time(content_type, current_time)
 	real_message = RealMessage(id=message.message_id, sender=sender, target=target, type=content_type, text=text,
 							   file_id=file_id, reply_to=reply_to, time=current_time)
 	session.add(real_message)
