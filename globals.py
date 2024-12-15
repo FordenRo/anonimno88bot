@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from yaml import safe_load as yaml_load
 
 IS_RELEASE = 'release' in sys.argv
+IS_DEBUG = 'debug' in sys.argv
 START_TIME = int(time.time())
 LOG_PATH = 'release.log' if IS_RELEASE else 'debug.log'
 FILES_PATH = 'files' if IS_RELEASE else 'testfiles'

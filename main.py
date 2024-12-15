@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from database import Base, User
 from filters.log import InfoFilter
-from globals import bot, engine, session, logger, IS_RELEASE
+from globals import bot, engine, session, logger, IS_RELEASE, IS_DEBUG
 from handlers import (start, rules, help, markup,
 					  message, simple_commands, panel,
 					  delete, private, warn, user_profile)
@@ -20,7 +20,7 @@ async def main():
 	dispatcher = Dispatcher()
 
 	event_logger.addFilter(InfoFilter())
-	logging.basicConfig(level=logging.INFO if IS_RELEASE else logging.DEBUG, handlers=[LogHandler()])
+	logging.basicConfig(level=logging.INFO if IS_RELEASE and not IS_DEBUG else logging.DEBUG, handlers=[LogHandler()])
 
 	dispatcher.include_routers(start.router,
 							   rules.router,
