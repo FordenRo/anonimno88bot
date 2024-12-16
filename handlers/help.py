@@ -2,35 +2,37 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, Message
 
 from filters.command import UserCommand
+from filters.user import UserFilter
 from globals import bot
+from database import User
 from utils import get_section, hide_markup
 
 router = Router()
 
 
-@router.message(UserCommand('help', description=get_section('command_description/help')))
-async def command(message: Message):
-	await message.delete()
-	await bot.send_message(message.from_user.id, get_section('help/message'),
+async def open_help(user: User):
+	await bot.send_message(user.id, get_section('help/title'),
 						   reply_markup=InlineKeyboardMarkup(
-							   inline_keyboard=[[InlineKeyboardButton(text=data[0], callback_data=f'help;{i}')] for
-												i, data in enumerate(get_section('help/buttons'))]
-											   + [[InlineKeyboardButton(text='Скрыть', callback_data='hide')]]))
+							   inline_keyboard=[[InlineKeyboardButton(text=data['title'], callback_data=f'help;{index}')]
+						                        for index, data in enumerate(get_section('help/sections'))]
+							                   + [[InlineKeyboardButton(text='Скрыть', callback_data='hide')]]))
 
 
-@router.callback_query(F.data.split(';')[0] == 'help')
-async def callback(callback: CallbackQuery):
+@router.message(UserCommand('help', description=get_section('command_description/help')))
+async def command(message: Message, user: User):
+	await message.delete()
+	await open_help(user)
+
+
+@router.callback_query(F.data.split(';')[0] == 'help', UserFilter())
+async def callback(callback: CallbackQuery, user: User):
 	args = callback.data.split(';')
 	if len(args) == 1:
-		await bot.send_message(callback.from_user.id, get_section('help/message'),
-							   reply_markup=InlineKeyboardMarkup(
-								   inline_keyboard=[[InlineKeyboardButton(text=data[0], callback_data=f'help;{i}')]
-													for i, data in enumerate(get_section('help/buttons'))]
-												   + [[InlineKeyboardButton(text='Скрыть', callback_data='hide')]]))
+		await open_help(user)
 	else:
 		section = int(args[1])
 
 		await bot.send_message(callback.from_user.id,
-							   '<b>{0}</b>\n\n{1}'.format(*get_section('help/buttons')[section]),
+							   '<b>{title}</b>\n\n{text}'.format(**get_section('help/sections')[section]),
 							   reply_markup=hide_markup)
 	await callback.answer()
