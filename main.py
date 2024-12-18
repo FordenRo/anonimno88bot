@@ -2,6 +2,7 @@ import logging
 from asyncio import run as run_async, gather, CancelledError
 
 from aiogram import Dispatcher
+from aiogram.enums import UpdateType
 from aiogram.loggers import event as event_logger
 from sqlalchemy import select
 
@@ -33,26 +34,20 @@ async def main():
                                private.router,
                                message.router)
 
-	tasks = []
-	for user in session.scalars(select(User)).all():
-		tasks += [update_user_commands(user)]
-	await gather(*tasks)
     tasks = []
     for user in session.scalars(select(User)).all():
         tasks += [update_user_commands(user)]
     await gather(*tasks)
+    cleaning_task = create_task(clean_messages())
 
     logger.info('Bot has started')
 
-	try:
-		await dispatcher.start_polling(bot, polling_timeout=30)
-	except CancelledError:
-		pass
+    try:
+        await dispatcher.start_polling(bot, polling_timeout=50,
+                                       allowed_updates=[UpdateType.MESSAGE, UpdateType.CALLBACK_QUERY])
+    except CancelledError:
+        pass
 
-	session.commit()
-	engine.dispose()
-	logger.info('Bot has stopped')
-	await save_log()
     session.commit()
     engine.dispose()
     logger.info('Bot has stopped')

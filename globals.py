@@ -23,7 +23,7 @@ bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode='HTML',
                                               link_preview=LinkPreviewOptions(is_disabled=True)))
 logger_stream = StringIO()
 engine = create_engine(f'sqlite:///{DATABASE_PATH}')
-session = Session(engine)
+session = Session(engine, expire_on_commit=False)
 logger = getLogger()
 
 with open('config.yaml', 'r', encoding='utf-8') as file:
