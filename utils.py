@@ -44,11 +44,6 @@ async def update_user_commands(user: User):
 							  scope=BotCommandScopeChat(chat_id=user.id))
 
 
-# TODO
-def get_user_fake_message_from_real(real_message: RealMessage, user: User):
-	return select(FakeMessage).select_from(RealMessage.fake_messages)
-
-
 def get_unique_user_fake_id():
 	users = session.scalars(select(User)).all()
 	reserved_ids = [user.fake_id for user in users]

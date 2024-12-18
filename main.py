@@ -20,26 +20,14 @@ async def clean_messages():
         curtime = time.time()
         for real_message in session.scalars(select(RealMessage)).all():
             await sleep(0.01)
-            # old_real_message = OldRealMessage(id=real_message.id,
-            #                                   time=real_message.time,
-            #                                   type=real_message.type,
-            #                                   text=real_message.text,
-            #                                   file_id=real_message.file_id,
-            #                                   reply_to_id=real_message.reply_to_id,
-            #                                   sender_id=real_message.sender_id,
-            #                                   target_id=real_message.target_id)
 
             if curtime - real_message.time < 60 * 60 * 24:
                 continue
 
             for fake_message in real_message.fake_messages:
-                # old_fake_message = OldFakeMessage(id=fake_message.id,
-                #                                   real_message_id=real_message.id,
-                #                                   user_id=fake_message.user_id)
                 session.delete(fake_message)
 
             session.delete(real_message)
-
             logger.debug(f'deleted message of time {time_to_str(int(curtime) - real_message.time)}')
 
         session.commit()
