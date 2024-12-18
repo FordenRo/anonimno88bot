@@ -42,7 +42,7 @@ async def main():
 	logger.info('Bot has started')
 
 	try:
-		await dispatcher.start_polling(bot)
+		await dispatcher.start_polling(bot, polling_timeout=30)
 	except CancelledError:
 		pass
 
