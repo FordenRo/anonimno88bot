@@ -1,18 +1,49 @@
 import logging
-from asyncio import run as run_async, gather, CancelledError
+import time
+from asyncio import CancelledError, create_task, gather, run as run_async, sleep
 
 from aiogram import Dispatcher
 from aiogram.enums import UpdateType
 from aiogram.loggers import event as event_logger
 from sqlalchemy import select
 
-from database import Base, User
+from database import Base, RealMessage, User
 from filters.log import InfoFilter
-from globals import bot, engine, session, logger, IS_RELEASE, IS_DEBUG
-from handlers import (start, rules, help, markup,
-					  message, simple_commands, panel,
-					  delete, private, warn, user_profile)
+from globals import bot, engine, IS_DEBUG, IS_RELEASE, logger, session
+from handlers import (delete, help, markup, message, panel, private, rules, simple_commands, start, user_profile, warn)
 from handlers.log import LogHandler
+from utils import save_log, time_to_str, update_user_commands
+
+
+async def clean_messages():
+    while True:
+        curtime = time.time()
+        for real_message in session.scalars(select(RealMessage)).all():
+            await sleep(0.01)
+            # old_real_message = OldRealMessage(id=real_message.id,
+            #                                   time=real_message.time,
+            #                                   type=real_message.type,
+            #                                   text=real_message.text,
+            #                                   file_id=real_message.file_id,
+            #                                   reply_to_id=real_message.reply_to_id,
+            #                                   sender_id=real_message.sender_id,
+            #                                   target_id=real_message.target_id)
+
+            if curtime - real_message.time < 60 * 60 * 24:
+                continue
+
+            for fake_message in real_message.fake_messages:
+                # old_fake_message = OldFakeMessage(id=fake_message.id,
+                #                                   real_message_id=real_message.id,
+                #                                   user_id=fake_message.user_id)
+                session.delete(fake_message)
+
+            session.delete(real_message)
+
+            logger.debug(f'deleted message of time {time_to_str(int(curtime) - real_message.time)}')
+
+        session.commit()
+        await sleep(1)
 
 
 async def main():
@@ -50,6 +81,7 @@ async def main():
 
     session.commit()
     engine.dispose()
+    cleaning_task.cancel()
     logger.info('Bot has stopped')
     await save_log()
 
