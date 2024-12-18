@@ -12,34 +12,37 @@ from handlers import (start, rules, help, markup,
 					  message, simple_commands, panel,
 					  delete, private, warn, user_profile)
 from handlers.log import LogHandler
-from utils import update_user_commands, save_log
 
 
 async def main():
-	Base.metadata.create_all(engine)
-	dispatcher = Dispatcher()
+    Base.metadata.create_all(engine)
+    dispatcher = Dispatcher()
 
-	event_logger.addFilter(InfoFilter())
-	logging.basicConfig(level=logging.INFO if IS_RELEASE and not IS_DEBUG else logging.DEBUG, handlers=[LogHandler()])
+    event_logger.addFilter(InfoFilter())
+    logging.basicConfig(level=logging.INFO if IS_RELEASE and not IS_DEBUG else logging.DEBUG, handlers=[LogHandler()])
 
-	dispatcher.include_routers(start.router,
-							   rules.router,
-							   help.router,
-							   markup.router,
-							   simple_commands.router,
-							   panel.router,
-							   delete.router,
-							   user_profile.router,
-							   warn.router,
-							   private.router,
-							   message.router)
+    dispatcher.include_routers(start.router,
+                               rules.router,
+                               help.router,
+                               markup.router,
+                               simple_commands.router,
+                               panel.router,
+                               delete.router,
+                               user_profile.router,
+                               warn.router,
+                               private.router,
+                               message.router)
 
 	tasks = []
 	for user in session.scalars(select(User)).all():
 		tasks += [update_user_commands(user)]
 	await gather(*tasks)
+    tasks = []
+    for user in session.scalars(select(User)).all():
+        tasks += [update_user_commands(user)]
+    await gather(*tasks)
 
-	logger.info('Bot has started')
+    logger.info('Bot has started')
 
 	try:
 		await dispatcher.start_polling(bot, polling_timeout=30)
@@ -50,7 +53,11 @@ async def main():
 	engine.dispose()
 	logger.info('Bot has stopped')
 	await save_log()
+    session.commit()
+    engine.dispose()
+    logger.info('Bot has stopped')
+    await save_log()
 
 
 if __name__ == '__main__':
-	run_async(main())
+    run_async(main())

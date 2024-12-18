@@ -1,6 +1,6 @@
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 
 
 class PrivateStates(StatesGroup):
-	message = State()
-	user = State()
+    message = State()
+    user = State()

@@ -7,9 +7,9 @@ from globals import session
 
 
 class UserFilter(Filter):
-	async def __call__(self, message: Message) -> bool | dict[str, any]:
-		user = session.scalar(select(User).where(User.id == message.from_user.id))
-		if not user:
-			return False
+    async def __call__(self, message: Message) -> bool | dict[str, any]:
+        user = session.scalar(select(User).where(User.id == message.from_user.id))
+        if not user:
+            return False
 
-		return {'user': user}
+        return {'user': user}
