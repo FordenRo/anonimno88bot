@@ -123,8 +123,7 @@ async def message(message: Message, user: User, state: FSMContext):
 		create_task(save_message(real_message))
 
 	tasks = []
-	if state == PrivateStates.message:
-		target = await state.get_value('target')
+	if real_message.target:
 		tasks += [send(real_message, target)]
 
 		for user in session.scalars(select(User).where(User.id != sender.id, User.id != target.id)):
