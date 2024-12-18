@@ -1,3 +1,5 @@
+import time
+
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
@@ -8,7 +10,7 @@ from filters.command import UserCommand
 from filters.user import UserFilter
 from globals import bot, session
 from states.user_profile import UserProfileStates
-from utils import cancel_markup, get_section, hide_markup
+from utils import cancel_markup, get_section, hide_markup, time_to_str
 
 router = Router()
 
@@ -34,7 +36,7 @@ async def user(message: Message, user: User, state: FSMContext):
         await bot.send_message(user.id, get_section('user_profile/error/value'), reply_markup=hide_markup)
         return
 
-    target = session.scalar(select(User).where(User.fake_id == target_id))
+    target: User = session.scalar(select(User).where(User.fake_id == target_id))
     if not target:
         await bot.send_message(user.id, get_section('user_profile/error/user'), reply_markup=hide_markup)
         return
@@ -43,8 +45,12 @@ async def user(message: Message, user: User, state: FSMContext):
     text = f"{get_section('id/display').format(target)} {chat.full_name}"
     if chat.username:
         text += f' (@{chat.username})'
-    text += f'ID: {target.id}'
+    text += f'\n\nТГ ID: <a href="tg://user?id={target.id}">{target.id}</a>\n'
+    text += f'С нами уже {time_to_str(int(time.time()) - target.joined_time)}\n'
+    text += f'Написал {len(target.real_messages)} сообщений'
+    if len(target.real_messages) > 0:
+        text += f'\nПоследнее сообщение {time_to_str(int(time.time()) - target.real_messages[0].time)} назад'
     if chat.bio:
-        text += f'\nBIO: {chat.bio}'
+        text += f'\n\nОписание: {chat.bio}'
 
     await bot.send_message(user.id, text, reply_markup=hide_markup)
