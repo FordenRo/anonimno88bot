@@ -85,6 +85,9 @@ async def type_state(message: Message, user: User, state: FSMContext):
 
     tasks = []
     for user in session.scalars(select(User).where(User.id != target.id)).all():
+        if user.ban:
+            continue
+
         tasks += [bot.send_message(user.id, get_section('warn/broadcast').format_map(format_map))]
     tasks += [bot.send_message(target.id, get_section('warn/user').format_map(format_map))]
 

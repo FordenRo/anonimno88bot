@@ -50,10 +50,12 @@ class CommandOpportunity(Flag):
     panel = 2 ** 1
     toggle_status = 2 ** 2
     warn = 2 ** 3
+    ban = 2 ** 4
+    mute = 2 ** 5
 
     USER = 0
-    ADMIN = warn
-    MODERATOR = ADMIN | user_profile | panel | toggle_status
+    ADMIN = warn | mute
+    MODERATOR = ADMIN | user_profile | panel | toggle_status | ban
     OWNER = MODERATOR
 
 
@@ -162,6 +164,7 @@ class Ban(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     time: Mapped[int] = mapped_column()
     duration: Mapped[int] = mapped_column()
+    reason: Mapped[str] = mapped_column()
 
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     user: Mapped['User'] = relationship(back_populates='ban', foreign_keys=[user_id])
@@ -176,6 +179,7 @@ class Mute(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     time: Mapped[int] = mapped_column()
     duration: Mapped[int] = mapped_column()
+    reason: Mapped[str] = mapped_column()
 
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     user: Mapped['User'] = relationship(back_populates='mute', foreign_keys=[user_id])

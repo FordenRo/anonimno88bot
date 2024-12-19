@@ -56,6 +56,9 @@ async def message(message: Message, user: User, state: FSMContext):
     session.commit()
 
     async def send(real_message: RealMessage, user: User):
+        if user.ban:
+            return
+
         text = '\n\n'.join(([real_message.text] if real_message.text else [])
                            + [get_section('id/display').format(real_message.sender)])
         kbtext = f'№{real_message.sender.fake_id}'

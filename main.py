@@ -10,7 +10,8 @@ from sqlalchemy import select
 from database import Base, RealMessage, User
 from filters.log import InfoFilter
 from globals import bot, engine, IS_DEBUG, IS_RELEASE, logger, session
-from handlers import (delete, help, markup, message, panel, private, rules, simple_commands, start, user_profile, warn)
+from handlers import (ban, delete, help, markup, message, mute, panel, private, rules, simple_commands, start,
+                      user_profile, warn)
 from handlers.log import LogHandler
 from utils import save_log, time_to_str, update_user_commands
 
@@ -47,6 +48,8 @@ async def main():
                                markup.router,
                                simple_commands.router,
                                panel.router,
+                               ban.router,
+                               mute.router,
                                delete.router,
                                user_profile.router,
                                warn.router,
@@ -58,6 +61,9 @@ async def main():
         tasks += [update_user_commands(user)]
     await gather(*tasks)
     cleaning_task = create_task(clean_messages())
+
+    ban.create_ban_tasks()
+    mute.create_mute_tasks()
 
     logger.info('Bot has started')
 
