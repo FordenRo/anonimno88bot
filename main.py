@@ -20,7 +20,7 @@ async def clean_messages():
     while True:
         curtime = time.time()
         for real_message in session.scalars(select(RealMessage)).all():
-            await sleep(0.01)
+            await sleep(1)
 
             if curtime - real_message.time < 60 * 60 * 24:
                 continue
@@ -32,7 +32,7 @@ async def clean_messages():
             logger.debug(f'deleted message of time {time_to_str(int(curtime) - real_message.time)}')
 
         session.commit()
-        await sleep(1)
+        await sleep(5)
 
 
 async def main():
