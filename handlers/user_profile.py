@@ -1,4 +1,5 @@
 import time
+import html
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
@@ -42,7 +43,7 @@ async def user(message: Message, user: User, state: FSMContext):
         return
 
     chat = await bot.get_chat(target.id)
-    text = f"{get_section('id/display').format(target)} {chat.full_name}"
+    text = html.escape(f'{get_section('id/display').format(target)} {chat.full_name}')
     if chat.username:
         text += f' (@{chat.username})'
     text += f'\n\nТГ ID: <a href="tg://user?id={target.id}">{target.id}</a>\n'
