@@ -1,5 +1,6 @@
 import os.path
 import time
+import html
 from asyncio import create_task, gather
 
 from aiofiles.os import makedirs
@@ -66,10 +67,15 @@ async def message(message: Message, user: User, state: FSMContext):
 
         if user.has_opportunity(Opportunity.CAN_SEE_USERNAMES):
             chat = await bot.get_chat(real_message.sender.id)
-            text += f'\n{chat.full_name} (@{chat.username})'
+            text += html.escape(f'\n{chat.full_name}')
+            if chat.username:
+                text += f' (@{chat.username})'
+
             if real_message.target:
                 chat = await bot.get_chat(real_message.target.id)
-                text += f'\n{chat.full_name} (@{chat.username})'
+                text += html.escape(f'\n{chat.full_name}')
+                if chat.username:
+                    text += f' (@{chat.username})'
 
         reply_parameters = None
         if real_message.reply_to:

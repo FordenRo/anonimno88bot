@@ -1,5 +1,6 @@
 import os.path
 import time
+import html
 from asyncio import create_task, gather
 from itertools import batched
 
@@ -51,7 +52,7 @@ async def user_list(callback: CallbackQuery, user: User):
 
     async def get_user_info(user: User):
         chat = await bot.get_chat(user.id)
-        return f'{str(user.role)} №{user.fake_id} {chat.full_name} ({f'@{chat.username}' if chat.username else f'id_{user.id}'})'
+        return html.escape(f'{str(user.role)} №{user.fake_id} {chat.full_name} ({f'@{chat.username}' if chat.username else f'id_{user.id}'})')
 
     tasks = [create_task(get_user_info(user)) for user in pages[index]]
     infos = await gather(*tasks)
