@@ -6,14 +6,16 @@ from itertools import batched
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, Message
-from sqlalchemy import select
+from aiogram.fsm.context import FSMContext
+from sqlalchemy import select, text as sql_text
 from sqlalchemy.sql.functions import count
 
 from database import AdminPanelOpportunity, CommandOpportunity, User
 from filters.command import UserCommand
 from filters.user import UserFilter
+from states.panel import PanelStates
 from globals import bot, LOG_PATH, logger_stream, session, START_TIME
-from utils import get_section, hide_markup, save_log, time_to_str
+from utils import get_section, hide_markup, save_log, time_to_str, cancel_markup
 
 router = Router()
 
@@ -99,6 +101,32 @@ async def log(callback: CallbackQuery, user: User):
         await bot.send_message(user.id, text, reply_markup=kb)
 
     await callback.answer()
+
+
+@router.callback_query(F.data == 'panel;execute', UserFilter())
+async def db_execute(callback: CallbackQuery, user: User, state: FSMContext):
+    msg = await bot.send_message(user.id, 'Введите команду', reply_markup=cancel_markup)
+    await callback.answer()
+    await state.set_state(PanelStates.execute)
+    await state.set_data({'message': msg})
+
+
+@router.message(PanelStates.execute, UserFilter())
+async def execute_state(message: Message, user: User, state: FSMContext):
+    await message.delete()
+    await (await state.get_value('message')).delete()
+    await state.clear()
+
+    try:
+        text = '\n'.join([str(i) for i in session.execute(sql_text(message.text)).scalars()])
+
+        if not text:
+            await bot.send_message(user.id, 'No output', reply_markup=hide_markup)
+            return
+
+        await bot.send_message(user.id, text, reply_markup=hide_markup)
+    except Exception as e:
+        await bot.send_message(user.id, f'Error: {e!s}', reply_markup=hide_markup)
 
 
 @router.callback_query(F.data == 'panel;log_file', UserFilter())

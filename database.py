@@ -52,11 +52,12 @@ class CommandOpportunity(Flag):
     warn = 2 ** 3
     ban = 2 ** 4
     mute = 2 ** 5
+    silent_ban = 2 ** 6
 
     USER = 0
     ADMIN = warn | mute
     MODERATOR = ADMIN | user_profile | panel | toggle_status | ban
-    OWNER = MODERATOR
+    OWNER = MODERATOR | silent_ban
 
 
 class Role(Enum):

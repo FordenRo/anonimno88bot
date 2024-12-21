@@ -26,12 +26,17 @@ async def message(message: Message, user: User, ban: Ban):
         2).start()
 
 
+@router.message(UserCommand('silent_ban', description='Выдать тихий бан', opportunity=CommandOpportunity.silent_ban))
+async def silent(message: Message, user: User, state: FSMContext):
+    await command(message, user, state, silent=True)
+
+
 @router.message(UserCommand('ban', description='Выдать бан', opportunity=CommandOpportunity.ban))
-async def command(message: Message, user: User, state: FSMContext):
+async def command(message: Message, user: User, state: FSMContext, silent: bool = False):
     await message.delete()
     msg = await bot.send_message(user.id, get_section('ban/command/user'), reply_markup=cancel_markup)
     await state.set_state(BanStates.user)
-    await state.set_data({'message': msg})
+    await state.set_data({'message': msg, 'silent': silent})
 
 
 @router.message(BanStates.user, UserFilter())
@@ -59,7 +64,7 @@ async def user_state(message: Message, user: User, state: FSMContext):
 
     msg = await bot.send_message(user.id, get_section('ban/command/duration'), reply_markup=cancel_markup)
     await state.set_state(BanStates.duration)
-    await state.set_data({'message': msg, 'target_id': target.id})
+    await state.set_data({'message': msg, 'target_id': target.id, 'silent': await state.get_value('silent')})
 
 
 @router.message(BanStates.duration, UserFilter())
@@ -76,7 +81,7 @@ async def duration_state(message: Message, user: User, state: FSMContext):
 
     msg = await bot.send_message(user.id, get_section('ban/command/reason'), reply_markup=cancel_markup)
     await state.set_state(BanStates.reason)
-    await state.set_data({'message': msg, 'target_id': await state.get_value('target_id'), 'duration': duration})
+    await state.set_data({'message': msg, 'target_id': await state.get_value('target_id'), 'duration': duration, 'silent': await state.get_value('silent')})
 
 
 @router.message(BanStates.reason, UserFilter())
@@ -87,13 +92,14 @@ async def reason_state(message: Message, user: User, state: FSMContext):
     duration = await state.get_value('duration')
     target_id = await state.get_value('target_id')
     target = session.scalar(select(User).where(User.id == target_id))
+    silent = await state.get_value('silent')
     await state.clear()
 
     reason = message.text
     await give_ban(target, sender, duration, reason)
 
 
-async def give_ban(target: User, sender: User, duration: int, reason: str):
+async def give_ban(target: User, sender: User, duration: int, reason: str, silent: bool = False):
     ban = Ban(user=target, sender=sender, duration=duration, reason=reason, time=time.time())
     session.add(ban)
     session.commit()
@@ -101,12 +107,13 @@ async def give_ban(target: User, sender: User, duration: int, reason: str):
 
     tasks = [bot.send_message(target.id, get_section('ban/user/receive')
                               .format(ban, remaining_time=time_to_str(ban.duration)))]
-    for user in session.scalars(select(User).where(User.id != target.id)).all():
-        if user.ban:
-            continue
+    if not silent:
+        for user in session.scalars(select(User).where(User.id != target.id)).all():
+            if user.ban:
+                continue
 
-        tasks += [bot.send_message(user.id, get_section('ban/broadcast')
-                                   .format(ban, duration=time_to_str(ban.duration)))]
+            tasks += [bot.send_message(user.id, get_section('ban/broadcast')
+                                       .format(ban, duration=time_to_str(ban.duration)))]
     await gather(*tasks)
 
 
