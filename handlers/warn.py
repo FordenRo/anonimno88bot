@@ -74,6 +74,7 @@ async def type_state(message: Message, user: User, state: FSMContext):
     warn = Warn(user=target, sender=sender, time=int(time.time()), section=index)
     session.add(warn)
     session.commit()
+    register_warn(warn)
 
     count = len(session.scalars(select(Warn).where(Warn.user == target, Warn.section == index)).all())
     section = get_section('rules/sections')[index]
@@ -97,3 +98,22 @@ async def type_state(message: Message, user: User, state: FSMContext):
         tasks += [bot.send_message(user.id, get_section('warn/broadcast').format_map(format_map))]
 
     await gather(*tasks)
+
+
+def register_warn(warn: Warn):
+    async def task(warn: Warn):
+        section = get_section('rules/sections')[warn.section]
+        remaining_time = max(warn.time + section['penalty']['expire'] * 60 * 60 * 24 - time.time(), 0)
+        await sleep(remaining_time)
+        if warn not in session:
+            return
+        logger.debug(f'Warn #{warn.id} is over')
+        session.delete(warn)
+        session.commit()
+
+    create_task(task(warn))
+
+
+def create_warn_tasks():
+    for warn in session.scalars(select(Warn)).all():
+        register_warn(warn)

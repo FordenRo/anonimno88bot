@@ -64,6 +64,7 @@ async def main():
 
     ban.create_ban_tasks()
     mute.create_mute_tasks()
+    warn.create_warn_tasks()
 
     logger.info('Bot has started')
 
