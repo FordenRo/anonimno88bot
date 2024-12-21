@@ -16,7 +16,8 @@ START_TIME = int(time.time())
 LOG_PATH = 'release.log' if IS_RELEASE else 'debug.log'
 FILES_PATH = 'files' if IS_RELEASE else 'testfiles'
 DATABASE_PATH = 'database.db' if IS_RELEASE else 'testdatabase.db'
-TOKEN = '7968306540:AAFxs5V5AdedRzDiMqTpn9l1etMj-16wPBo' if IS_RELEASE else '7430750632:AAGhNMrwZwTxJTiriFvOD02hxGhcMXdVLBQ'
+TOKEN = '7968306540:AAFxs5V5AdedRzDiMqTpn9l1etMj-16wPBo' if IS_RELEASE \
+    else '7430750632:AAGhNMrwZwTxJTiriFvOD02hxGhcMXdVLBQ'
 
 bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode='HTML',
                                               protect_content=True,

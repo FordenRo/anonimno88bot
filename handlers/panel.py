@@ -1,21 +1,21 @@
+import html
 import os.path
 import time
-import html
 from asyncio import create_task, gather
 from itertools import batched
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery, FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy import select, text as sql_text
 from sqlalchemy.sql.functions import count
 
 from database import AdminPanelOpportunity, CommandOpportunity, User
 from filters.command import UserCommand
 from filters.user import UserFilter
-from states.panel import PanelStates
 from globals import bot, LOG_PATH, logger_stream, session, START_TIME
-from utils import get_section, hide_markup, save_log, time_to_str, cancel_markup
+from states.panel import PanelStates
+from utils import cancel_markup, get_section, hide_markup, save_log, time_to_str
 
 router = Router()
 
@@ -54,7 +54,8 @@ async def user_list(callback: CallbackQuery, user: User):
 
     async def get_user_info(user: User):
         chat = await bot.get_chat(user.id)
-        return html.escape(f'{str(user.role)} №{user.fake_id} {chat.full_name} ({f'@{chat.username}' if chat.username else f'id_{user.id}'})')
+        return html.escape(f'{str(user.role)} №{user.fake_id} {chat.full_name}'
+                           f' ({f'@{chat.username}' if chat.username else f'id_{user.id}'})')
 
     tasks = [create_task(get_user_info(user)) for user in pages[index]]
     infos = await gather(*tasks)

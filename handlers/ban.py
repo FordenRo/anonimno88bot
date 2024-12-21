@@ -81,7 +81,8 @@ async def duration_state(message: Message, user: User, state: FSMContext):
 
     msg = await bot.send_message(user.id, get_section('ban/command/reason'), reply_markup=cancel_markup)
     await state.set_state(BanStates.reason)
-    await state.set_data({'message': msg, 'target_id': await state.get_value('target_id'), 'duration': duration, 'silent': await state.get_value('silent')})
+    await state.set_data({'message': msg, 'target_id': await state.get_value('target_id'), 'duration': duration,
+                          'silent': await state.get_value('silent')})
 
 
 @router.message(BanStates.reason, UserFilter())

@@ -1,5 +1,5 @@
-import time
 import html
+import time
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext

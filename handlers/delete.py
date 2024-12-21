@@ -4,7 +4,7 @@ from aiogram import Router
 from aiogram.types import Message
 from sqlalchemy import select
 
-from database import Opportunity, RealMessage, User, FakeMessage
+from database import FakeMessage, Opportunity, RealMessage, User
 from filters.command import UserCommand
 from globals import bot, session
 from handlers.delayed import DelayedMessage
@@ -33,7 +33,9 @@ async def command(message: Message, user: User):
             2).start()
         return
 
-    reply_to = getattr(session.scalar(select(FakeMessage).where(FakeMessage.id == message.reply_to_message.message_id)), 'real_message', session.scalar(select(RealMessage).where(RealMessage.id == message.reply_to_message.message_id)))
+    reply_to = getattr(session.scalar(select(FakeMessage).where(FakeMessage.id == message.reply_to_message.message_id)),
+                       'real_message',
+                       session.scalar(select(RealMessage).where(RealMessage.id == message.reply_to_message.message_id)))
     if not reply_to:
         DelayedMessage(await bot.send_message(user.id, get_section('delete/error')), 2).start()
         return
