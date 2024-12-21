@@ -1,5 +1,5 @@
 import time
-from asyncio import gather
+from asyncio import create_task, gather, sleep
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
@@ -9,7 +9,10 @@ from sqlalchemy import select
 from database import CommandOpportunity, User, Warn
 from filters.command import UserCommand
 from filters.user import UserFilter
-from globals import bot, session
+from globals import bot, logger, session
+from handlers.ban import give_ban
+from handlers.delayed import DelayedMessage
+from handlers.mute import give_mute
 from states.warn import WarnStates
 from utils import cancel_markup, get_section, time_to_str
 
@@ -76,7 +79,8 @@ async def type_state(message: Message, user: User, state: FSMContext):
     session.commit()
     register_warn(warn)
 
-    count = len(session.scalars(select(Warn).where(Warn.user == target, Warn.section == index)).all())
+    warns = session.scalars(select(Warn).where(Warn.user == target, Warn.section == index)).all()
+    count = len(warns)
     section = get_section('rules/sections')[index]
     after = section['penalty']['after'] + 1
 
@@ -98,6 +102,18 @@ async def type_state(message: Message, user: User, state: FSMContext):
         tasks += [bot.send_message(user.id, get_section('warn/broadcast').format_map(format_map))]
 
     await gather(*tasks)
+
+    if after == count:
+        types = {'mute': give_mute,
+                 'ban': give_ban}
+
+        await types[section['penalty']['type']](target, sender,
+                                                section['penalty']['duration'] * 60 * 60,
+                                                section['text'] + ' ({0}/{0})'.format(section['penalty']['after'] + 1))
+
+        for warn in warns:
+            session.delete(warn)
+        session.commit()
 
 
 def register_warn(warn: Warn):
