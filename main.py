@@ -77,6 +77,7 @@ async def main():
     session.commit()
     engine.dispose()
     cleaning_task.cancel()
+
     logger.info('Bot has stopped')
     await save_log()
 
