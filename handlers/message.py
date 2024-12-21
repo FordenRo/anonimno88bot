@@ -150,3 +150,8 @@ async def kbmessage(callback: CallbackQuery):
     real_message = session.scalar(select(RealMessage).where(RealMessage.id == id))
     text = get_section('id/display').format(real_message.sender)
     await callback.answer(text)
+
+
+@router.message()
+async def unregistered_message(message: Message):
+    await bot.send_message(message.from_user.id, 'Вы не зарегистрированы. Пожалуйста введите /start')
