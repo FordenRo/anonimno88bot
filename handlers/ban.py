@@ -93,7 +93,6 @@ async def reason_state(message: Message, user: User, state: FSMContext):
     ban = Ban(time=time.time(), duration=duration, user=target, sender=sender, reason=reason)
     session.add(ban)
     session.commit()
-
     register_ban(ban)
 
     tasks = [bot.send_message(target.id, get_section('ban/user/receive')
@@ -103,7 +102,7 @@ async def reason_state(message: Message, user: User, state: FSMContext):
             continue
 
         tasks += [bot.send_message(user.id, get_section('ban/broadcast')
-                             .format(ban, duration=time_to_str(ban.duration)))]
+                                   .format(ban, duration=time_to_str(ban.duration)))]
     await gather(*tasks)
 
 
@@ -112,9 +111,12 @@ def register_ban(ban: Ban):
         remaining_time = max(ban.time + ban.duration - time.time(), 0)
         await sleep(remaining_time)
         await bot.send_message(ban.user_id, get_section('ban/user/over'))
+        if ban not in session:
+            return
         logger.debug(f'Ban #{ban.id} is over')
         session.delete(ban)
         session.commit()
+        session.refresh(ban.user)
 
     create_task(task(ban))
 

@@ -93,7 +93,6 @@ async def reason_state(message: Message, user: User, state: FSMContext):
     mute = Mute(time=time.time(), duration=duration, user=target, sender=sender, reason=reason)
     session.add(mute)
     session.commit()
-
     register_mute(mute)
 
     tasks = [bot.send_message(target.id, get_section('mute/user/receive')
@@ -112,9 +111,12 @@ def register_mute(mute: Mute):
         remaining_time = max(mute.time + mute.duration - time.time(), 0)
         await sleep(remaining_time)
         await bot.send_message(mute.user_id, get_section('mute/user/over'))
+        if mute not in session:
+            return
         logger.debug(f'Mute #{mute.id} is over')
         session.delete(mute)
         session.commit()
+        session.refresh(mute.user)
 
     create_task(task(mute))
 
