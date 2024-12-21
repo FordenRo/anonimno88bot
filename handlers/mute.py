@@ -90,7 +90,11 @@ async def reason_state(message: Message, user: User, state: FSMContext):
     await state.clear()
 
     reason = message.text
-    mute = Mute(time=time.time(), duration=duration, user=target, sender=sender, reason=reason)
+    await give_mute(target, sender, duration, reason)
+
+
+async def give_mute(target: User, sender: User, duration: int, reason: str):
+    mute = Mute(user=target, sender=sender, duration=duration, reason=reason, time=time.time())
     session.add(mute)
     session.commit()
     register_mute(mute)

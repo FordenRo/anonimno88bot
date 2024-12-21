@@ -3,7 +3,7 @@ from asyncio import gather
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
+from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from sqlalchemy import select
 
 from database import CommandOpportunity, User, Warn
@@ -11,7 +11,7 @@ from filters.command import UserCommand
 from filters.user import UserFilter
 from globals import bot, session
 from states.warn import WarnStates
-from utils import get_section, hide_markup, time_to_str
+from utils import cancel_markup, get_section, time_to_str
 
 router = Router()
 
@@ -20,7 +20,7 @@ router = Router()
                             opportunity=CommandOpportunity.warn))
 async def command(message: Message, user: User, state: FSMContext):
     await message.delete()
-    msg = await bot.send_message(user.id, get_section('warn/command/user'))
+    msg = await bot.send_message(user.id, get_section('warn/command/user'), reply_markup=cancel_markup)
     await state.set_state(WarnStates.user)
     await state.set_data({'message': msg})
 
@@ -33,12 +33,14 @@ async def user_state(message: Message, user: User, state: FSMContext):
     try:
         target_id = int(message.text)
     except ValueError:
-        await bot.send_message(user.id, get_section('warn/command/error/value'))
+        DelayedMessage(await bot.send_message(user.id, get_section('warn/command/error/value')), 2).start()
+        await state.clear()
         return
 
     target = session.scalar(select(User).where(User.fake_id == target_id))
     if not target:
-        await bot.send_message(user.id, get_section('warn/command/error/user'))
+        DelayedMessage(await bot.send_message(user.id, get_section('warn/command/error/user')), 2).start()
+        await state.clear()
         return
 
     msg = await bot.send_message(user.id, get_section('warn/command/type'),
@@ -65,7 +67,8 @@ async def type_state(message: Message, user: User, state: FSMContext):
             break
 
     if not index:
-        await bot.send_message(sender.id, get_section('warn/command/error/type'), reply_markup=hide_markup)
+        DelayedMessage(await bot.send_message(sender.id, get_section('warn/command/error/type'),
+                                              reply_markup=ReplyKeyboardRemove()), 2).start()
         return
 
     warn = Warn(user=target, sender=sender, time=int(time.time()), section=index)
@@ -83,12 +86,14 @@ async def type_state(message: Message, user: User, state: FSMContext):
                   'expire': time_to_str(section['penalty']['expire'] * 24 * 60 * 60),
                   'count': count}
 
-    tasks = []
-    for user in session.scalars(select(User).where(User.id != target.id)).all():
+    tasks = [bot.send_message(sender.id, get_section('warn/broadcast').format_map(format_map),
+                              reply_markup=ReplyKeyboardRemove()),
+             bot.send_message(target.id, get_section('warn/user').format_map(format_map))]
+
+    for user in session.scalars(select(User).where(User.id != target.id, User.id != sender.id)).all():
         if user.ban:
             continue
 
         tasks += [bot.send_message(user.id, get_section('warn/broadcast').format_map(format_map))]
-    tasks += [bot.send_message(target.id, get_section('warn/user').format_map(format_map))]
 
     await gather(*tasks)

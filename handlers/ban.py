@@ -90,7 +90,11 @@ async def reason_state(message: Message, user: User, state: FSMContext):
     await state.clear()
 
     reason = message.text
-    ban = Ban(time=time.time(), duration=duration, user=target, sender=sender, reason=reason)
+    await give_ban(target, sender, duration, reason)
+
+
+async def give_ban(target: User, sender: User, duration: int, reason: str):
+    ban = Ban(user=target, sender=sender, duration=duration, reason=reason, time=time.time())
     session.add(ban)
     session.commit()
     register_ban(ban)
