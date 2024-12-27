@@ -25,9 +25,6 @@ async def clean_messages():
             if curtime - real_message.time < 60 * 60 * 24:
                 continue
 
-            for fake_message in real_message.fake_messages:
-                session.delete(fake_message)
-
             session.delete(real_message)
             logger.debug(f'deleted message of time {time_to_str(int(curtime) - real_message.time)}')
 
@@ -66,8 +63,6 @@ async def main():
     mute.create_mute_tasks()
     warn.create_warn_tasks()
 
-    logger.info('Bot has started')
-
     try:
         await dispatcher.start_polling(bot, polling_timeout=50,
                                        allowed_updates=[UpdateType.MESSAGE, UpdateType.CALLBACK_QUERY])
@@ -78,7 +73,6 @@ async def main():
     engine.dispose()
     cleaning_task.cancel()
 
-    logger.info('Bot has stopped')
     await save_log()
 
 

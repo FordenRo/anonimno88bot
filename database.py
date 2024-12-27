@@ -41,7 +41,8 @@ class AdminPanelOpportunity(Flag):
 
     USER = 0
     ADMIN = 0
-    MODERATOR = ADMIN | BAN_LIST_ACCESS | MUTE_LIST_ACCESS | BOT_BAN_LIST_ACCESS | REPORT_LIST | STATISTICS_ACCESS | USER_LIST_ACCESS
+    MODERATOR = (ADMIN | BAN_LIST_ACCESS | MUTE_LIST_ACCESS | BOT_BAN_LIST_ACCESS
+                 | REPORT_LIST | STATISTICS_ACCESS | USER_LIST_ACCESS)
     OWNER = MODERATOR | CAN_SET_ROLES | SERVER_ACCESS | POST_UPDATE
 
 
@@ -135,7 +136,7 @@ class RealMessage(Base):
     type: Mapped[str] = mapped_column()
     text: Mapped[str] = mapped_column(nullable=True)
     file_id: Mapped[str] = mapped_column(nullable=True)
-    fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='real_message')
+    fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='real_message', cascade='all, delete')
 
     reply_to_id: Mapped[int] = mapped_column(ForeignKey('real_messages.id'), nullable=True)
     reply_to: Mapped[Optional['RealMessage']] = relationship()
