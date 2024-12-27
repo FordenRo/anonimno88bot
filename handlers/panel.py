@@ -10,10 +10,10 @@ from aiogram.types import CallbackQuery, FSInputFile, InlineKeyboardButton, Inli
 from sqlalchemy import select, text as sql_text
 from sqlalchemy.sql.functions import count
 
-from database import AdminPanelOpportunity, CommandOpportunity, User
+from database import AdminPanelOpportunity, Ban, CommandOpportunity, Mute, Poll, User
 from filters.command import UserCommand
 from filters.user import UserFilter
-from globals import bot, LOG_PATH, logger_stream, session, START_TIME
+from globals import bot, DATABASE_PATH, LOG_PATH, logger_stream, session, START_TIME
 from states.panel import PanelStates
 from utils import cancel_markup, get_section, hide_markup, save_log, time_to_str
 
@@ -37,10 +37,14 @@ async def command(message: Message, user: User):
 
 
 @router.callback_query(F.data == 'panel;stats', UserFilter())
-async def callback(callback: CallbackQuery, user: User):
+async def stats(callback: CallbackQuery, user: User):
     await bot.send_message(user.id, f'Статистика:\n\n'
                                     f'Кол-во пользователей: {session.scalar(select(count()).select_from(User))}\n'
-                                    f'Время работы: {time_to_str(int(time.time() - START_TIME))}',
+                                    f'Кол-во банов: {session.scalar(select(count()).select_from(Ban))}\n'
+                                    f'Кол-во мутов: {session.scalar(select(count()).select_from(Mute))}\n'
+                                    f'Кол-во опросов: {session.scalar(select(count()).select_from(Poll))}'
+                                    f'Время работы: {time_to_str(int(time.time() - START_TIME))}\n'
+                                    f'Вес БД: {os.path.getsize(DATABASE_PATH)}',
                            reply_markup=hide_markup)
     await callback.answer()
 
