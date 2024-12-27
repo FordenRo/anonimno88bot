@@ -39,7 +39,8 @@ async def user(message: Message, user: User, state: FSMContext):
 
     await bot.send_message(user.id, get_section('private/joined').format(target),
                            reply_markup=ReplyKeyboardMarkup(
-                               keyboard=[[KeyboardButton(text=get_section('private/exit'))]]))
+                               keyboard=[[KeyboardButton(text=get_section('private/exit'))]],
+                               is_persistent=True, input_field_placeholder='Приватное сообщение...'))
     await state.set_state(PrivateStates.message)
     await state.set_data({'target': target})
 
