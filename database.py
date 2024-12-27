@@ -21,11 +21,13 @@ class Opportunity(Flag):
     READ_PRIVATE_MESSAGES = 2 ** 7
     SILENT_MUTE_BAN = 2 ** 8
     CAN_SEE_DELETED_MESSAGES = 2 ** 9
+    CAN_SEE_POLL_INFO = 2 ** 10
 
     USER = 0
     ADMIN = NO_MESSAGE_DELAY | NO_DELETE_RESTRICTIONS | DELETE_OTHERS_MESSAGES
-    MODERATOR = ADMIN | CAN_SEE_USERNAMES | CAN_RECEIVE_USER_JOINED_BANNED_MESSAGE
-    OWNER = MODERATOR | NO_CONTENT_PROTECTION | MUTE_BAN_ADMINS | READ_PRIVATE_MESSAGES | SILENT_MUTE_BAN | CAN_SEE_DELETED_MESSAGES
+    MODERATOR = ADMIN | CAN_SEE_USERNAMES | CAN_RECEIVE_USER_JOINED_BANNED_MESSAGE | CAN_SEE_POLL_INFO
+    OWNER = (MODERATOR | NO_CONTENT_PROTECTION | MUTE_BAN_ADMINS | READ_PRIVATE_MESSAGES
+             | SILENT_MUTE_BAN | CAN_SEE_DELETED_MESSAGES)
 
 
 class AdminPanelOpportunity(Flag):
@@ -54,10 +56,11 @@ class CommandOpportunity(Flag):
     ban = 2 ** 4
     mute = 2 ** 5
     silent_ban = 2 ** 6
+    poll = 2 ** 7
 
     USER = 0
     ADMIN = warn | mute
-    MODERATOR = ADMIN | user_profile | panel | toggle_status | ban
+    MODERATOR = ADMIN | user_profile | panel | toggle_status | ban | poll
     OWNER = MODERATOR | silent_ban
 
 
@@ -202,3 +205,44 @@ class Warn(Base):
 
     sender_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     sender: Mapped['User'] = relationship(foreign_keys=[sender_id])
+
+
+class PollAnswer(Base):
+    __tablename__ = 'poll_answers'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    time: Mapped[int] = mapped_column()
+
+    variant_id: Mapped[int] = mapped_column(ForeignKey('poll_variants.id'))
+    variant: Mapped['PollVariant'] = relationship(back_populates='answers')
+
+    poll_id: Mapped[int] = mapped_column(ForeignKey('polls.id'))
+    poll: Mapped['Poll'] = relationship(back_populates='answers')
+
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user: Mapped['User'] = relationship()
+
+
+class PollVariant(Base):
+    __tablename__ = 'poll_variants'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    text: Mapped[str] = mapped_column()
+    answers: Mapped[list['PollAnswer']] = relationship(back_populates='variant')
+
+    poll_id: Mapped[int] = mapped_column(ForeignKey('polls.id'))
+    poll: Mapped['Poll'] = relationship(back_populates='variants')
+
+
+class Poll(Base):
+    __tablename__ = 'polls'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    time: Mapped[int] = mapped_column()
+    duration: Mapped[int] = mapped_column()
+    description: Mapped[str] = mapped_column()
+    answers: Mapped[list['PollAnswer']] = relationship(back_populates='poll', cascade='all, delete')
+    variants: Mapped[list['PollVariant']] = relationship(back_populates='poll', cascade='all, delete')
+
+    sender_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    sender: Mapped['User'] = relationship()

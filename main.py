@@ -10,8 +10,8 @@ from sqlalchemy import select
 from database import Base, RealMessage, User
 from filters.log import InfoFilter
 from globals import bot, engine, IS_DEBUG, IS_RELEASE, logger, session
-from handlers import (ban, delete, help, markup, message, mute, panel, private, rules, simple_commands, start,
-                      user_profile, warn)
+from handlers import (ban, delete, help, markup, message, mute, panel, poll, private, rules,
+                      simple_commands, start, user_profile, warn)
 from handlers.log import LogHandler
 from utils import save_log, time_to_str, update_user_commands
 
@@ -49,6 +49,7 @@ async def main():
                                mute.router,
                                delete.router,
                                user_profile.router,
+                               poll.router,
                                warn.router,
                                private.router,
                                message.router)
@@ -61,6 +62,7 @@ async def main():
 
     ban.create_ban_tasks()
     mute.create_mute_tasks()
+    poll.create_poll_tasks()
     warn.create_warn_tasks()
 
     try:
