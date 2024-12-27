@@ -22,7 +22,7 @@ router = Router()
                             opportunity=CommandOpportunity.poll))
 async def command(message: Message, user: User, state: FSMContext):
     await message.delete()
-    msg = await bot.send_message(user.id, 'Введите описание опроса', reply_markup=cancel_markup)
+    msg = await bot.send_message(user.id, get_section('poll/command/description'), reply_markup=cancel_markup)
     await state.set_state(PollStates.description)
     await state.set_data({'message': msg})
 
@@ -32,7 +32,7 @@ async def description(message: Message, user: User, state: FSMContext):
     await message.delete()
     await (await state.get_value('message')).delete()
 
-    msg = await bot.send_message(user.id, 'Введите длительность опроса в часах', reply_markup=cancel_markup)
+    msg = await bot.send_message(user.id, get_section('poll/command/duration'), reply_markup=cancel_markup)
     await state.set_state(PollStates.duration)
     await state.set_data({'message': msg, 'description': message.text})
 
@@ -46,7 +46,7 @@ async def duration(message: Message, user: User, state: FSMContext):
     try:
         duration = int(float(message.text) * 60 * 60)
     except ValueError:
-        DelayedMessage(await bot.send_message(user.id, 'Ошибка'), 2).start()
+        DelayedMessage(await bot.send_message(user.id, get_section('poll/error/duration')), 2).start()
         await state.clear()
         return
 
@@ -61,7 +61,7 @@ async def duration(message: Message, user: User, state: FSMContext):
 
 
 async def request_variant(user: User, state: FSMContext):
-    msg = await bot.send_message(user.id, 'Введите вариант', reply_markup=cancel_markup)
+    msg = await bot.send_message(user.id, get_section('poll/command/variant'), reply_markup=cancel_markup)
     poll_id = await state.get_value('poll_id')
     await state.set_state(PollStates.variant)
     await state.set_data({'message': msg, 'poll_id': poll_id})
@@ -77,9 +77,10 @@ async def variant_state(message: Message, user: User, state: FSMContext):
     session.add(variant)
     session.commit()
 
-    msg = await bot.send_message(user.id, 'Добавить еще вариант?', reply_markup=ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text='Добавить')],
-                  [KeyboardButton(text='Создать опрос')]]))
+    msg = await bot.send_message(user.id, get_section('poll/command/more'),
+                                 reply_markup=ReplyKeyboardMarkup(
+                                     keyboard=[[KeyboardButton(text='Добавить')],
+                                               [KeyboardButton(text='Создать опрос')]]))
     await state.set_state(PollStates.more)
     await state.set_data({'message': msg, 'poll_id': poll_id})
 
@@ -97,8 +98,8 @@ async def more_state(message: Message, user: User, state: FSMContext):
         await state.clear()
         session.commit()
 
-        DelayedMessage(await bot.send_message(user.id, 'Опрос создан', reply_markup=ReplyKeyboardRemove()),
-                       2).start()
+        DelayedMessage(await bot.send_message(user.id, get_section('poll/command/created'),
+                                              reply_markup=ReplyKeyboardRemove()), 2).start()
         await send_poll(poll)
 
 
@@ -111,14 +112,14 @@ async def callback(callback: CallbackQuery, user: User):
         id, = args
         variant = session.scalar(select(PollVariant).where(PollVariant.id == id))
         if not variant:
-            await callback.answer('Данный опрос уже закончен', True)
+            await callback.answer(get_section('poll/error/expired'), True)
             await callback.message.delete()
             return
 
         answer = session.scalar(select(PollAnswer).where(PollAnswer.user == user,
                                                          PollAnswer.poll == variant.poll))
         if answer:
-            await callback.answer('Вы уже выбрали вариант', True)
+            await callback.answer(get_section('poll/error/chosen'), True)
             return
 
         answer = PollAnswer(variant=variant, user=user, time=int(time.time()), poll=variant.poll)
@@ -133,13 +134,13 @@ async def callback(callback: CallbackQuery, user: User):
 
         await callback.message.edit_text(f'<b>{variant.poll.description}</b>\n\nВаш выбор: <i>{variant.text}</i>',
                                          reply_markup=keyboard)
-        await callback.answer('Ответ сохранен!')
+        await callback.answer(get_section('poll/answered'))
 
     async def info():
         id, = args
         poll = session.scalar(select(Poll).where(Poll.id == id))
         if not poll:
-            await callback.answer('Данный опрос уже закончен', True)
+            await callback.answer(get_section('poll/error/expired'), True)
             await callback.message.delete()
             return
 

@@ -386,6 +386,18 @@ welcome:
 
 
     Вы: {user:s}'
+poll:
+  command:
+    description: Введите описание опроса
+    duration: Введите длительность опроса в часах
+    variant: Введите вариант
+    more: Добавить еще вариант?
+    created: Опрос создан
+  error:
+    duration: Длительность может быть только числовой
+    expired: Данный опрос уже закончен
+    chosen: Вы уже выбрали вариант
+  answered: Ответ сохранен!
 debounce:
   default: '<b>Не так часто!</b>'
   text:
