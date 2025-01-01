@@ -42,7 +42,7 @@ async def stats(callback: CallbackQuery, user: User):
                                     f'Кол-во пользователей: {session.scalar(select(count()).select_from(User))}\n'
                                     f'Кол-во банов: {session.scalar(select(count()).select_from(Ban))}\n'
                                     f'Кол-во мутов: {session.scalar(select(count()).select_from(Mute))}\n'
-                                    f'Кол-во опросов: {session.scalar(select(count()).select_from(Poll))}'
+                                    f'Кол-во опросов: {session.scalar(select(count()).select_from(Poll))}\n'
                                     f'Время работы: {time_to_str(int(time.time() - START_TIME))}\n'
                                     f'Вес БД: {os.path.getsize(DATABASE_PATH)}',
                            reply_markup=hide_markup)
