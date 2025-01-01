@@ -345,6 +345,12 @@ rules:
         after: 2
         expire: 7
         duration: 3
+    - text: Пропаганда терроризма
+      penalty:
+        type: mute
+        after: 1
+        expire: 30
+        duration: 7
   title: 📋 <b>Правила</b> 📋
   section: '<b><i>{index}.</i> {text}</b>
 
