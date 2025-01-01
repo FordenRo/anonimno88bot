@@ -1,7 +1,7 @@
 import time
 
 from aiogram import Router
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy import select
 
 from database import FakeMessage, Opportunity, RealMessage, User
@@ -51,6 +51,12 @@ async def command(message: Message, user: User):
         return
 
     for fake_message in reply_to.fake_messages:
+        if fake_message.user.has_opportunity(Opportunity.CAN_SEE_DELETED_MESSAGES):
+            keyboard = InlineKeyboardMarkup(
+                    inline_keyboard=[[InlineKeyboardButton(text='Удаленное', callback_data=f'delinfo')]])
+            await bot.edit_message_reply_markup(message_id=fake_message.id, chat_id=fake_message.user_id, reply_markup=keyboard)
+            continue
+
         try:
             await bot.delete_message(fake_message.user_id, fake_message.id)
         except:
