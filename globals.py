@@ -18,10 +18,14 @@ FILES_PATH = 'files' if IS_RELEASE else 'testfiles'
 DATABASE_PATH = 'database.db' if IS_RELEASE else 'testdatabase.db'
 TOKEN = '7968306540:AAFxs5V5AdedRzDiMqTpn9l1etMj-16wPBo' if IS_RELEASE \
     else '7430750632:AAGhNMrwZwTxJTiriFvOD02hxGhcMXdVLBQ'
+NOTIFICATION_TOKEN = '7818349534:AAFZoceGpZVyE0LO4mcAfUuRs6eikSQr_Gs'
 
 bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode='HTML',
                                               protect_content=True,
                                               link_preview=LinkPreviewOptions(is_disabled=True)))
+notif_bot = Bot(NOTIFICATION_TOKEN, default=DefaultBotProperties(parse_mode='HTML',
+                                                                 link_preview=LinkPreviewOptions(is_disabled=True)))
+
 logger_stream = StringIO()
 engine = create_engine(f'sqlite:///{DATABASE_PATH}')
 session = Session(engine, expire_on_commit=False)

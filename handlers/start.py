@@ -8,8 +8,8 @@ from aiogram.types import FSInputFile, Message
 from sqlalchemy import exists, select
 
 from database import Opportunity, Role, User
-from globals import bot, session
-from utils import get_section, get_unique_user_fake_id, hide_markup, text_inline_markup, update_user_commands
+from globals import bot, notif_bot, session
+from utils import get_section, get_unique_user_fake_id, text_inline_markup, update_user_commands
 
 router = Router()
 
@@ -43,7 +43,6 @@ async def new_user_notification(user: User):
     for target in session.scalars(select(User).where(User.id != user.id)):
         if target.has_opportunity(Opportunity.CAN_RECEIVE_USER_JOINED_BANNED_MESSAGE):
             chat = await bot.get_chat(user.id)
-            await bot.send_message(target.id,
-                                   f'Новый {user.role!s} №{user.fake_id} {chat.full_name} '
-                                   f'({f'@{chat.username}' if chat.username else f'id_{user.id}'})',
-                                   reply_markup=hide_markup)
+            await notif_bot.send_message(target.id,
+                                   f'Новый {user.role} №{user.fake_id} {chat.full_name} '
+                                   f'({f'@{chat.username}' if chat.username else f'id_{user.id}'})')
