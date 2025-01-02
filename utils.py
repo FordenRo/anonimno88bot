@@ -75,6 +75,10 @@ def time_to_str(time: int):
 	return ' '.join(array)
 
 
+def join_strings_at_index(string: str, destination: str, index: int):
+	return destination[:index] + string + destination[index:]
+
+
 async def save_log():
 	async with open(LOG_PATH, 'w') as file:
 		await file.write(logger_stream.getvalue())

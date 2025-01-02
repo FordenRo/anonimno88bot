@@ -1,5 +1,6 @@
 import html
 import os.path
+import re
 import time
 from asyncio import create_task, gather
 
@@ -11,9 +12,9 @@ from sqlalchemy import select
 
 from database import FakeMessage, Opportunity, RealMessage, User
 from filters.user import UserFilter
-from globals import bot, FILES_PATH, logger, session, START_TIME
+from globals import bot, FILES_PATH, logger, notif_bot, session, START_TIME
 from handlers.delayed import DelayedMessage
-from utils import get_section, time_to_str
+from utils import get_section, join_strings_at_index, time_to_str
 
 router = Router()
 
@@ -126,6 +127,32 @@ async def message(message: Message, user: User, state: FSMContext):
         await makedirs(os.path.dirname(path), exist_ok=True)
         await bot.download(real_message.file_id, path)
 
+    async def check_message(real_message: RealMessage):
+        track_pairs = get_section('tracked_words/pairs')
+        p1 = re.search(f'\\b{'|'.join([f'({word})' for word in track_pairs[0]])}', real_message.text)
+        p2 = re.search(f'\\b{'|'.join([f'({word})' for word in track_pairs[1]])}', real_message.text)
+
+        if p1 and p2:
+            tasks = []
+            for user in session.scalars(select(User)).all():
+                if not user.has_opportunity(Opportunity.TRACKED_WORDS_NOTIFICATION):
+                    continue
+
+                fake_message = session.scalar(select(FakeMessage)
+                                              .where(FakeMessage.real_message == real_message,
+                                                     FakeMessage.user == user))
+                if fake_message:
+                    text = join_strings_at_index('<u>', real_message.text, p1.start())
+                    text = join_strings_at_index('</u>', text, p1.end() + 3)
+                    text = join_strings_at_index('<u>', text, p2.start() + 3 + 4)
+                    text = join_strings_at_index('</u>', text, p2.end() + 3 + 4 + 3)
+
+                    tasks += [notif_bot.send_message(user.id,
+                                                     f'<b>Замечено подозрительное сообщение</b>\n\n'
+                                                     f'{text}\n\n'
+                                                     f'{real_message.sender.role} №{real_message.sender.fake_id}')]
+            await gather(*tasks)
+
     if real_message.file_id:
         create_task(save_message(real_message))
 
@@ -141,6 +168,7 @@ async def message(message: Message, user: User, state: FSMContext):
             tasks += [send(real_message, user)]
 
     await gather(*tasks)
+    create_task(check_message(real_message))
     logger.debug(f'Message sent within {(time.time() - debug_time) * 1000} ms')
 
 
