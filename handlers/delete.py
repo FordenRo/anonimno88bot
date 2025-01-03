@@ -1,11 +1,11 @@
 import time
 from asyncio import create_task
 
-from aiogram import Router
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram import Router, F
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from sqlalchemy import select
 
-from database import FakeMessage, Opportunity, RealMessage, User
+from database import FakeMessage, Opportunity, RealMessage, User, DeleteInfo
 from filters.command import UserCommand
 from globals import bot, session
 from handlers.delayed import DelayedMessage
@@ -51,12 +51,29 @@ async def command(message: Message, user: User):
         await bot.send_message(user.id, get_section('delete/error'), reply_markup=hide_markup)
         return
 
+    delete_info = DeleteInfo(real_message=reply_to, user=user, time=current_time)
+    session.add(delete_info)
+    session.commit()
+
     for fake_message in reply_to.fake_messages:
         if fake_message.user.has_opportunity(Opportunity.CAN_SEE_DELETED_MESSAGES):
             keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[[InlineKeyboardButton(text='Удаленное', callback_data=f'delinfo')]])
+                inline_keyboard=[[InlineKeyboardButton(text='Удаленное', callback_data=f'delinfo {delete_info.id}')]])
             create_task(bot.edit_message_reply_markup(message_id=fake_message.id, chat_id=fake_message.user_id,
                                                       reply_markup=keyboard))
             continue
 
         create_task(bot.delete_message(fake_message.user_id, fake_message.id))
+
+
+@router.callback_query(F.data.split()[0] == 'delinfo')
+async def callback(callback: CallbackQuery):
+    id = int(callback.data.split()[1])
+
+    delete_info = session.scalar(select(DeleteInfo).where(DeleteInfo.id == id))
+    if not delete_info:
+        await callback.answer('Ошибка')
+        return
+
+    await callback.answer(f'Удалил {delete_info.user.role} №{delete_info.user.fake_id}\n'
+                          f'{time_to_str(int(time.time()) - delete_info.time)} назад', True)

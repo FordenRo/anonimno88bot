@@ -142,6 +142,7 @@ class RealMessage(Base):
     text: Mapped[str] = mapped_column(nullable=True)
     file_id: Mapped[str] = mapped_column(nullable=True)
     fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='real_message', cascade='all, delete')
+    delete_info: Mapped['DeleteInfo'] = relationship(back_populates='real_message')
 
     reply_to_id: Mapped[int] = mapped_column(ForeignKey('real_messages.id'), nullable=True)
     reply_to: Mapped[Optional['RealMessage']] = relationship()
@@ -163,6 +164,19 @@ class FakeMessage(Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     user: Mapped['User'] = relationship(back_populates='fake_messages')
+
+
+class DeleteInfo(Base):
+    __tablename__ = 'delete_infos'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    time: Mapped[int] = mapped_column()
+
+    real_message_id: Mapped[int] = mapped_column(ForeignKey('real_messages.id'))
+    real_message: Mapped['RealMessage'] = relationship(back_populates='delete_info')
+
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user: Mapped['User'] = relationship()
 
 
 class Ban(Base):
