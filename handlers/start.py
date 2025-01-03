@@ -16,8 +16,6 @@ router = Router()
 
 @router.message(CommandStart())
 async def start(message: Message):
-    await message.delete()
-
     if session.query(exists(User).where(User.id == message.from_user.id)).scalar():
         user = session.scalar(select(User).where(User.id == message.from_user.id))
     else:
@@ -34,6 +32,7 @@ async def start(message: Message):
                                  caption=get_section('welcome/message'),
                                  reply_markup=text_inline_markup(get_section('welcome/buttons')))
         create_task(new_user_notification(user))
+    await message.delete()
     await update_user_commands(user)
 
 
