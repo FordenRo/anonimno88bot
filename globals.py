@@ -3,7 +3,7 @@ import time
 from io import StringIO
 from logging import getLogger
 
-from aiogram import Bot
+from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.types import LinkPreviewOptions
 from sqlalchemy import create_engine
@@ -25,6 +25,7 @@ bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode='HTML',
                                               link_preview=LinkPreviewOptions(is_disabled=True)))
 notif_bot = Bot(NOTIFICATION_TOKEN, default=DefaultBotProperties(parse_mode='HTML',
                                                                  link_preview=LinkPreviewOptions(is_disabled=True)))
+notif_dispatcher = Dispatcher()
 
 logger_stream = StringIO()
 engine = create_engine(f'sqlite:///{DATABASE_PATH}')

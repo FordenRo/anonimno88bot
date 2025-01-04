@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from database import Base, RealMessage, User
 from filters.log import InfoFilter
-from globals import bot, engine, IS_DEBUG, IS_RELEASE, logger, notif_bot, session
+from globals import bot, engine, IS_DEBUG, IS_RELEASE, logger, notif_bot, session, notif_dispatcher
 from handlers import (ban, delete, help, markup, message, mute, notification, panel, poll, private, rules,
                       simple_commands, start, user_profile, warn)
 from handlers.log import LogHandler
@@ -35,7 +35,6 @@ async def clean_messages():
 async def main():
     Base.metadata.create_all(engine)
     dispatcher = Dispatcher()
-    notif_dispatcher = Dispatcher()
 
     event_logger.addFilter(InfoFilter())
     logging.basicConfig(level=logging.INFO if IS_RELEASE and not IS_DEBUG else logging.DEBUG, handlers=[LogHandler()])

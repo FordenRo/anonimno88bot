@@ -4,7 +4,7 @@ import time
 from asyncio import create_task, gather
 from itertools import batched
 
-from aiogram import F, Router
+from aiogram import F, Router, Dispatcher
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy import select, text as sql_text
@@ -13,7 +13,7 @@ from sqlalchemy.sql.functions import count
 from database import AdminPanelOpportunity, Ban, CommandOpportunity, Mute, Poll, User
 from filters.command import UserCommand
 from filters.user import UserFilter
-from globals import bot, DATABASE_PATH, LOG_PATH, logger_stream, session, START_TIME
+from globals import bot, DATABASE_PATH, LOG_PATH, logger_stream, session, START_TIME, notif_dispatcher
 from states.panel import PanelStates
 from utils import cancel_markup, get_section, hide_markup, save_log, time_to_str
 
@@ -134,9 +134,17 @@ async def execute_state(message: Message, user: User, state: FSMContext):
         await bot.send_message(user.id, f'Error: {e!s}', reply_markup=hide_markup)
 
 
-@router.callback_query(F.data == 'panel;log_file', UserFilter())
-async def send_log_file(callback: CallbackQuery, user: User):
+@router.callback_query(F.data == 'panel;stop')
+async def stop(callback: CallbackQuery, dispatcher: Dispatcher):
+    await callback.message.delete()
+    await callback.answer('Выключение...')
+    await gather(notif_dispatcher.stop_polling(),
+                 dispatcher.stop_polling())
+
+
+@router.callback_query(F.data == 'panel;log_file')
+async def send_log_file(callback: CallbackQuery):
     await callback.answer('Отправление...')
     await save_log()
-    await bot.send_document(user.id, FSInputFile(LOG_PATH, os.path.basename(LOG_PATH)),
+    await bot.send_document(callback.from_user.id, FSInputFile(LOG_PATH, os.path.basename(LOG_PATH)),
                             reply_markup=hide_markup, protect_content=False)

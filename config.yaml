@@ -268,7 +268,7 @@ panel:
         - panel;db_save
         - SERVER_ACCESS
       - - Остановить
-        - stop
+        - panel;stop
         - SERVER_ACCESS
       - - Команда БЗ
         - panel;execute
