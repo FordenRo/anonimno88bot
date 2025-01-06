@@ -6,6 +6,7 @@ from aiogram import Dispatcher
 from aiogram.enums import UpdateType
 from aiogram.loggers import event as event_logger
 from sqlalchemy import select
+from sqlalchemy.exc import PendingRollbackError
 
 from database import Base, RealMessage, User
 from filters.log import InfoFilter
@@ -76,7 +77,12 @@ async def main():
     except CancelledError:
         pass
 
-    session.commit()
+    try:
+        session.commit()
+    except PendingRollbackError as e:
+        logger.error('Session has rolled back due to an error!', exc_info=e)
+        session.rollback()
+
     engine.dispose()
     cleaning_task.cancel()
 
