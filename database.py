@@ -142,7 +142,7 @@ class RealMessage(Base):
     text: Mapped[str] = mapped_column(nullable=True)
     file_id: Mapped[str] = mapped_column(nullable=True)
     fake_messages: Mapped[list['FakeMessage']] = relationship(back_populates='real_message', cascade='all, delete')
-    delete_info: Mapped['DeleteInfo'] = relationship(back_populates='real_message')
+    delete_info: Mapped['DeleteInfo'] = relationship(back_populates='real_message', cascade='merge, delete')
 
     reply_to_id: Mapped[int] = mapped_column(ForeignKey('real_messages.id'), nullable=True)
     reply_to: Mapped[Optional['RealMessage']] = relationship()
