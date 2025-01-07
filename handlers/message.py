@@ -118,7 +118,7 @@ async def message(message: Message, user: User, state: FSMContext):
         session.commit()
 
     async def save_message(real_message: RealMessage):
-        if real_message.type in ['sticker', 'animation']:
+        if not real_message.file_id or real_message.type in ['sticker', 'animation']:
             return
 
         file = await bot.get_file(real_message.file_id)
@@ -128,6 +128,9 @@ async def message(message: Message, user: User, state: FSMContext):
         await bot.download(real_message.file_id, path)
 
     async def check_message(real_message: RealMessage):
+        if not real_message.text:
+            return
+
         track_pairs = get_section('tracked_words/pairs')
         p1 = re.search(f'\\b{'|'.join([f'({word})' for word in track_pairs[0]])}', real_message.text)
         p2 = re.search(f'\\b{'|'.join([f'({word})' for word in track_pairs[1]])}', real_message.text)
@@ -153,9 +156,6 @@ async def message(message: Message, user: User, state: FSMContext):
                                                      f'{real_message.sender.role} №{real_message.sender.fake_id}')]
             await gather(*tasks)
 
-    if real_message.file_id:
-        create_task(save_message(real_message))
-
     tasks = []
     if real_message.target:
         tasks += [send(real_message, target)]
@@ -168,6 +168,7 @@ async def message(message: Message, user: User, state: FSMContext):
             tasks += [send(real_message, user)]
 
     await gather(*tasks)
+    create_task(save_message(real_message))
     create_task(check_message(real_message))
     logger.debug(f'Message sent within {(time.time() - debug_time) * 1000} ms')
 
