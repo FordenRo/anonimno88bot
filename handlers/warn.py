@@ -46,7 +46,7 @@ async def user_state(message: Message, user: User, state: FSMContext):
         await state.clear()
         return
 
-    await handle_user_state(user=user, state=state, target_id=target_id)
+    await handle_user_state(user=user, state=state, target_id=target.id)
 
 
 async def handle_user_state(user: User, state: FSMContext, target_id: int):
