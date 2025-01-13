@@ -352,9 +352,12 @@ rules:
         expire: 30
         duration: 7
   title: 📋 <b>Правила</b> 📋
-  section: '<b><i>{index}.</i> {text}</b>
+  section: '<b><i>{index}.</i> {section[text]}</b>
 
-            Наказание: <i>{after} предупреждения</i>, после <b>{type}</b> на {time}'
+            Наказание: <i>{section[penalty][after]} предупреждения</i>, после <b>{type}</b> на {time}'
+  no_warn_section: '<b><i>{index}.</i> {section[text]}</b>
+
+                    Наказание: <u>Без предупреждений</u> <b>{type}</b> на {time}'
 welcome:
   animation: start.gif
   buttons:
