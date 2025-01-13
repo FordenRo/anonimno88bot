@@ -84,46 +84,50 @@ async def type_state(message: Message, user: User, state: FSMContext):
                                               reply_markup=ReplyKeyboardRemove()), 2).start()
         return
 
-    warn = Warn(user=target, sender=sender, time=int(time.time()), section=index)
-    session.add(warn)
-    session.commit()
-    register_warn(warn)
-
-    warns = session.scalars(select(Warn).where(Warn.user == target, Warn.section == index)).all()
-    count = len(warns)
     section = get_section('rules/sections')[index]
     after = section['penalty']['after'] + 1
+    types = {'mute': give_mute,
+             'ban': give_ban}
+    if after > 1:
+        warn = Warn(user=target, sender=sender, time=int(time.time()), section=index)
+        session.add(warn)
+        session.commit()
+        register_warn(warn)
 
-    format_map = {'target': target,
-                  'sender': sender,
-                  'reason': section['text'],
-                  'after': after,
-                  'expire': time_to_str(section['penalty']['expire'] * 24 * 60 * 60),
-                  'count': count}
+        warns = session.scalars(select(Warn).where(Warn.user == target, Warn.section == index)).all()
+        count = len(warns)
 
-    tasks = [bot.send_message(sender.id, get_section('warn/broadcast').format_map(format_map),
-                              reply_markup=ReplyKeyboardRemove()),
-             bot.send_message(target.id, get_section('warn/user').format_map(format_map))]
+        format_map = {'target': target,
+                      'sender': sender,
+                      'reason': section['text'],
+                      'after': after,
+                      'expire': time_to_str(section['penalty']['expire'] * 24 * 60 * 60),
+                      'count': count}
 
-    for user in session.scalars(select(User).where(User.id != target.id, User.id != sender.id)).all():
-        if user.ban:
-            continue
+        tasks = [bot.send_message(sender.id, get_section('warn/broadcast').format_map(format_map),
+                                  reply_markup=ReplyKeyboardRemove()),
+                 bot.send_message(target.id, get_section('warn/user').format_map(format_map))]
 
-        tasks += [bot.send_message(user.id, get_section('warn/broadcast').format_map(format_map))]
+        for user in session.scalars(select(User).where(User.id != target.id, User.id != sender.id)).all():
+            if user.ban:
+                continue
 
-    await gather(*tasks)
+            tasks += [bot.send_message(user.id, get_section('warn/broadcast').format_map(format_map))]
 
-    if after == count:
-        types = {'mute': give_mute,
-                 'ban': give_ban}
+        await gather(*tasks)
 
+        if after == count:
+            await types[section['penalty']['type']](target, sender,
+                                                    section['penalty']['duration'] * 60 * 60,
+                                                    section['text'] + ' ({0}/{0})'.format(section['penalty']['after'] + 1))
+
+            for warn in warns:
+                session.delete(warn)
+            session.commit()
+    else:
         await types[section['penalty']['type']](target, sender,
                                                 section['penalty']['duration'] * 60 * 60,
                                                 section['text'] + ' ({0}/{0})'.format(section['penalty']['after'] + 1))
-
-        for warn in warns:
-            session.delete(warn)
-        session.commit()
 
 
 def register_warn(warn: Warn):
