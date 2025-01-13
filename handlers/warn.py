@@ -69,7 +69,7 @@ async def type_state(message: Message, user: User, state: FSMContext):
             index = i
             break
 
-    if not index:
+    if index is None:
         DelayedMessage(await bot.send_message(sender.id, get_section('warn/command/error/type'),
                                               reply_markup=ReplyKeyboardRemove()), 2).start()
         return
