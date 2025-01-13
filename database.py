@@ -61,9 +61,9 @@ class CommandOpportunity(Flag):
     poll = 2 ** 7
 
     USER = 0
-    ADMIN = warn | mute
-    MODERATOR = ADMIN | user_profile | panel | toggle_status | ban | poll
-    OWNER = MODERATOR | silent_ban
+    ADMIN = warn
+    MODERATOR = ADMIN | user_profile | panel | toggle_status | poll
+    OWNER = MODERATOR | silent_ban | ban | mute
 
 
 class Role(Enum):
