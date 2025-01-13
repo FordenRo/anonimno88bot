@@ -153,7 +153,11 @@ async def message(message: Message, user: User, state: FSMContext):
                     tasks += [notif_bot.send_message(user.id,
                                                      f'<b>Замечено подозрительное сообщение</b>\n\n'
                                                      f'{text}\n\n'
-                                                     f'{real_message.sender.role} №{real_message.sender.fake_id}')]
+                                                     f'{real_message.sender.role} №{real_message.sender.fake_id}',
+                                                     reply_markup=InlineKeyboardMarkup(
+                                                         inline_keyboard=[[InlineKeyboardButton(
+                                                             text='Выдать предупреждение',
+                                                             url=f't.me/anonimno88bot?start=warn-{real_message.sender_id}')]]))]
             await gather(*tasks)
 
     tasks = []

@@ -46,12 +46,16 @@ async def user_state(message: Message, user: User, state: FSMContext):
         await state.clear()
         return
 
+    await handle_user_state(user=user, state=state, target_id=target_id)
+
+
+async def handle_user_state(user: User, state: FSMContext, target_id: int):
     msg = await bot.send_message(user.id, get_section('warn/command/type'),
                                  reply_markup=ReplyKeyboardMarkup(
                                      keyboard=[[KeyboardButton(text=section['text'])]
                                                for section in get_section('rules/sections')]))
     await state.set_state(WarnStates.type)
-    await state.set_data({'target_id': target.id, 'message': msg})
+    await state.set_data({'target_id': target_id, 'message': msg})
 
 
 @router.message(WarnStates.type, UserFilter())
