@@ -330,7 +330,7 @@ rules:
     - text: Слив данных пользователей
       penalty:
         type: mute
-        after: 1
+        after: 0
         expire: 14
         duration: 24
     - text: Реклама
@@ -342,14 +342,15 @@ rules:
     - text: Сообщения, содержащие расчленение/изнасилование
       penalty:
         type: mute
-        after: 2
+        after: 1
         expire: 7
-        duration: 3
+        duration: 72
     - text: Пропаганда терроризма
       penalty:
         type: mute
         after: 1
         expire: 30
+        duration: 168
     - text: Детская порнография
       penalty:
         type: mute
