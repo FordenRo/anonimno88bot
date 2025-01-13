@@ -350,7 +350,18 @@ rules:
         type: mute
         after: 1
         expire: 30
-        duration: 7
+    - text: Детская порнография
+      penalty:
+        type: mute
+        after: 0
+        expire: 30
+        duration: 48
+    - text: Порнография
+      penalty:
+        type: mute
+        after: 1
+        expire: 14
+        duration: 8
   title: 📋 <b>Правила</b> 📋
   section: '<b><i>{index}.</i> {section[text]}</b>
 
