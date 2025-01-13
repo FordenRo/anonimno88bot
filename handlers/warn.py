@@ -53,7 +53,8 @@ async def handle_user_state(user: User, state: FSMContext, target_id: int):
     msg = await bot.send_message(user.id, get_section('warn/command/type'),
                                  reply_markup=ReplyKeyboardMarkup(
                                      keyboard=[[KeyboardButton(text=section['text'])]
-                                               for section in get_section('rules/sections')]))
+                                               for section in get_section('rules/sections')]
+                                              + [[KeyboardButton(text='Отмена')]]))
     await state.set_state(WarnStates.type)
     await state.set_data({'target_id': target_id, 'message': msg})
 
@@ -66,6 +67,11 @@ async def type_state(message: Message, user: User, state: FSMContext):
 
     target = session.scalar(select(User).where(User.id == await state.get_value('target_id')))
     await state.clear()
+
+    if message.text == 'Отмена':
+        DelayedMessage(await bot.send_message(sender.id, 'Отменено',
+                                              reply_markup=ReplyKeyboardRemove()), 2).start()
+        return
 
     index = None
     for i, section in enumerate(get_section('rules/sections')):
