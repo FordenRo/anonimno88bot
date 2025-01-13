@@ -312,7 +312,7 @@ rules:
     - text: Оскорбление родных/близких
       penalty:
         type: mute
-        after: 1
+        after: 0
         expire: 14
         duration: 24
     - text: Спам сообщениями без какого-либо контекста
