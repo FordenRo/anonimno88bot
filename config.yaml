@@ -261,8 +261,8 @@ panel:
       - - Список банов
         - panel;ban_list
         - BAN_LIST_ACCESS
-    - - - Выпустить обновление
-        - panel;post_update
+    - - - Обновить и перезапустить
+        - panel;update
         - POST_UPDATE
     - - - Сохранить
         - panel;db_save

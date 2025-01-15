@@ -13,7 +13,7 @@ from sqlalchemy.sql.functions import count
 from database import AdminPanelOpportunity, Ban, CommandOpportunity, Mute, Poll, User
 from filters.command import UserCommand
 from filters.user import UserFilter
-from globals import bot, DATABASE_PATH, LOG_PATH, logger_stream, session, START_TIME, notif_dispatcher
+from globals import IS_DEBUG, IS_RELEASE, bot, DATABASE_PATH, LOG_PATH, logger_stream, session, START_TIME, notif_dispatcher
 from states.panel import PanelStates
 from utils import cancel_markup, get_section, hide_markup, save_log, time_to_str
 
@@ -140,6 +140,18 @@ async def stop(callback: CallbackQuery, dispatcher: Dispatcher):
     await callback.answer('Выключение...')
     await gather(notif_dispatcher.stop_polling(),
                  dispatcher.stop_polling())
+
+
+@router.callback_query(F.data == 'panel;update')
+async def update(callback: CallbackQuery, dispatcher: Dispatcher):
+    await stop(callback, dispatcher)
+    os.system('git pull')
+    args = ['python', 'main.py']
+    if IS_RELEASE:
+        args += ['release']
+    if IS_DEBUG:
+        args += ['debug']
+    os.system(' '.join(args))
 
 
 @router.callback_query(F.data == 'panel;log_file')
