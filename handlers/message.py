@@ -12,7 +12,7 @@ from sqlalchemy import select
 
 from database import FakeMessage, Opportunity, RealMessage, User
 from filters.user import UserFilter
-from globals import bot, FILES_PATH, logger, notif_bot, session, START_TIME
+from globals import bot, FILES_PATH, logger, notif_bot, session, START_TIME, BOT_NAME
 from handlers.delayed import DelayedMessage
 from utils import get_section, join_strings_at_index, time_to_str
 
@@ -157,7 +157,7 @@ async def message(message: Message, user: User, state: FSMContext):
                                                      reply_markup=InlineKeyboardMarkup(
                                                          inline_keyboard=[[InlineKeyboardButton(
                                                              text='Выдать предупреждение',
-                                                             url=f't.me/anonimno88bot?start=warn-{real_message.sender_id}')]]))]
+                                                             url=f't.me/{BOT_NAME}?start=warn-{real_message.sender_id}')]]))]
             await gather(*tasks)
 
     tasks = []
