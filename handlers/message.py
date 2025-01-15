@@ -177,11 +177,24 @@ async def message(message: Message, user: User, state: FSMContext):
     logger.debug(f'Message sent within {(time.time() - debug_time) * 1000} ms')
 
 
-@router.callback_query(F.data.split(';')[0] == 'kbmessage')
-async def kbmessage(callback: CallbackQuery):
+@router.callback_query(F.data.split(';')[0] == 'kbmessage', UserFilter())
+async def kbmessage(callback: CallbackQuery, user: User):
     id = int(callback.data.split(';')[1])
     real_message = session.scalar(select(RealMessage).where(RealMessage.id == id))
     text = get_section('id/display').format(real_message.sender)
+
+    if user.has_opportunity(Opportunity.CAN_SEE_USERNAMES):
+        chat = await bot.get_chat(real_message.sender.id)
+        text += html.escape(f' {chat.full_name}')
+        if chat.username:
+            text += f' (@{chat.username})'
+
+        if real_message.target:
+            chat = await bot.get_chat(real_message.target.id)
+            text += html.escape(f'\n{chat.full_name}')
+            if chat.username:
+                text += f' (@{chat.username})'
+
     await callback.answer(text)
 
 
